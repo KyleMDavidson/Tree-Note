@@ -20,7 +20,7 @@ export default function ExplorerScreen() {
 //this is using implicit structure - non-leafs are traversible, while leafs are displayable
 function NoteTree({node}: {node: Node}){
   if (node.children.length > 0){
-  return node.children.map((node) => {
+  const childTree = node.children.map((node) => {
     return (
       <View key={node.id} style={{borderWidth: 5, borderColor: 'red', height: 100 }}>
         <Text>{node.title}</Text>
@@ -28,6 +28,14 @@ function NoteTree({node}: {node: Node}){
       </View>
     )
   })
+  return (
+    <View>
+    <View>
+      <Text style={{height: 100, width: 100, backgroundColor: 'blue'}}>{node.title}</Text>
+    </View>
+      {childTree}
+    </View>
+  )
 }
 else{
   return (
