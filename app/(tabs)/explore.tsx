@@ -20,27 +20,19 @@ export default function ExplorerScreen() {
 //this is using implicit structure - non-leafs are traversible, while leafs are displayable
 function NoteTree({node}: {node: Node}){
   if (node.children.length > 0){
-  const childTree = node.children.map((node) => {
-    return (
-      <View key={node.id} style={{borderWidth: 5, borderColor: 'red', height: 100 }}>
-        <Text>{node.title}</Text>
-        <NoteTree key={node.id} node={node} />
-      </View>
+    return(
+  <View className='tree-row'>
+  <View>
+      <Text style={{height: 100, width: 100 }}>{node.title}</Text>
+    </View>
+{node.children.map((node) => {return <NoteTree key={node.id} node={node} />})}
+</View>
     )
-  })
-  return (
-    <View>
-    <View>
-      <Text style={{height: 100, width: 100, backgroundColor: 'blue'}}>{node.title}</Text>
-    </View>
-      {childTree}
-    </View>
-  )
 }
 else{
   return (
     <View>
-      <Text style={{height: 100, width: 100, backgroundColor: 'blue'}}>{node.title}</Text>
+      <Text style={{height: 100, width: 100}}>{node.title}</Text>
     </View>
   )
 }
