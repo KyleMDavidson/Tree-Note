@@ -9,16 +9,16 @@ const TestRoot: Node = {
                     {
                         id: 3,
                         children: [],
-                        title: 'Hello',
-                        content: 'World',
+                        title: 'depth: 3',
+                        content: 'this is a leaf',
                     }
                 ],
-                title: 'Hello',
-                content: 'World',
+                title: 'depth: 2',
+                content: 'this is an internal node',
             }
         ],
-        title: 'Hello',
-        content: 'World',
+        title: 'depth: 1',
+        content: 'this is a root node',
 }
 
 export { TestRoot };
