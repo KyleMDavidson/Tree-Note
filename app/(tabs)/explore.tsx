@@ -20,11 +20,11 @@ export default function ExplorerScreen() {
 
 //this returns a component which uses DnDKit
 //this is using implicit structure - non-leafs are traversible, while leafs are displayable
-function NoteTree(node: Node){
+function NoteTree({node}: {node: Node}){
   if (node.children.length > 0){
   node.children.map((node) => {
     return (
-      <NoteTree node={node} />
+      <NoteTree key={node.id} node={node} />
     )
   })
 }
