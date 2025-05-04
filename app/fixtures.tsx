@@ -9,15 +9,15 @@ const TestRoot: Node = {
                     {
                         id: 3,
                         children: [],
-                        title: 'depth: 3',
+                        title: 'title. depth: 3',
                         content: 'this is a leaf',
                     }
                 ],
-                title: 'depth: 2',
+                title: 'title. depth: 2',
                 content: 'this is an internal node',
             }
         ],
-        title: 'depth: 1',
+        title: 'title. depth: 1',
         content: 'this is a root node',
 }
 

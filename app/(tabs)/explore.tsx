@@ -6,12 +6,12 @@ import { Node } from '../types';
 
 
 export default function ExplorerScreen() {
+  console.log(`rendering ExplorerScreen w/ testRoot: ${JSON.stringify(TestRoot)}`);
   let [rootNote, setRootNode] = useState<Node |null>(TestRoot);
-  console.log(`testRoot: ${JSON.stringify(TestRoot)}`);
+  console.log(`rootNote: ${JSON.stringify(rootNote)}`);
 
   return (
     <ScrollView style={styles.container}>
-        <Text style={styles.text}>da hell</Text>
         {rootNote && <NoteTree node={rootNote} />}
     </ScrollView>
   );
@@ -22,16 +22,20 @@ export default function ExplorerScreen() {
 //this is using implicit structure - non-leafs are traversible, while leafs are displayable
 function NoteTree({node}: {node: Node}){
   if (node.children.length > 0){
-  node.children.map((node) => {
+  return node.children.map((node) => {
+    console.log(`rendering child node: ${JSON.stringify(node)}`);
     return (
-      <NoteTree key={node.id} node={node} />
+      <View key={node.id} style={{borderWidth: 5, borderColor: 'red', height: 100 }}>
+        <Text>{node.title}</Text>
+        <NoteTree key={node.id} node={node} />
+      </View>
     )
   })
 }
 else{
   return (
     <View>
-      <Text>{node.title}</Text>
+      <Text style={{height: 100, width: 100, backgroundColor: 'blue'}}>{node.title}</Text>
     </View>
   )
 }
