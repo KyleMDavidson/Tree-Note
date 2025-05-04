@@ -1,10 +1,10 @@
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-export default function ExplorerScreen() {
+export default function Notes() {
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
-        <Text style={styles.text}>da hell</Text>
+        <Text style={styles.text}>da fuk</Text>
       </View>
     </ScrollView>
   );
