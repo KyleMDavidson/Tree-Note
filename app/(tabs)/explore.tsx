@@ -6,9 +6,7 @@ import { Node } from '../types';
 
 
 export default function ExplorerScreen() {
-  console.log(`rendering ExplorerScreen w/ testRoot: ${JSON.stringify(TestRoot)}`);
   let [rootNote, setRootNode] = useState<Node |null>(TestRoot);
-  console.log(`rootNote: ${JSON.stringify(rootNote)}`);
 
   return (
     <ScrollView style={styles.container}>
@@ -23,7 +21,6 @@ export default function ExplorerScreen() {
 function NoteTree({node}: {node: Node}){
   if (node.children.length > 0){
   return node.children.map((node) => {
-    console.log(`rendering child node: ${JSON.stringify(node)}`);
     return (
       <View key={node.id} style={{borderWidth: 5, borderColor: 'red', height: 100 }}>
         <Text>{node.title}</Text>
