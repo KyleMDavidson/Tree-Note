@@ -1,6 +1,11 @@
+import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Note } from '../types';
 
 export default function ExplorerScreen() {
+  let [rootNote, setRootNode] = useState<Note |null>(null);
+
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.content}>
@@ -8,6 +13,12 @@ export default function ExplorerScreen() {
       </View>
     </ScrollView>
   );
+}
+
+
+//this returns a component which uses DnDKit
+function NoteTree(notes: note[]){
+
 }
 
 const styles = StyleSheet.create({

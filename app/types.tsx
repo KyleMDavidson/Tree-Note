@@ -1,8 +1,11 @@
-type note = {
+type Note = {
     id: string;
     title: string;
     content: string;
-    children: Partial<note>[];
+    children: Partial<Note>[];
 }
 
-export type { note };
+
+
+export type { Note };
+
