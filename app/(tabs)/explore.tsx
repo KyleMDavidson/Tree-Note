@@ -1,24 +1,18 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
 
-import { Leaf, Node } from '../types';
-
+import { TestRoot } from '../fixtures';
+import { Node } from '../types';
 
 
 export default function ExplorerScreen() {
-  let [rootNote, setRootNode] = useState<Node |null>(null);
-  let a : Leaf = {
-    id: 1,
-    children: [],
-    title: 'Hello',
-    content: 'World',
-  }
+  let [rootNote, setRootNode] = useState<Node |null>(TestRoot);
+  console.log(`testRoot: ${JSON.stringify(TestRoot)}`);
 
   return (
     <ScrollView style={styles.container}>
-      <View style={styles.content}>
         <Text style={styles.text}>da hell</Text>
-      </View>
+        {rootNote && <NoteTree node={rootNote} />}
     </ScrollView>
   );
 }
@@ -30,9 +24,7 @@ function NoteTree(node: Node){
   if (node.children.length > 0){
   node.children.map((node) => {
     return (
-      <View key={node.id}>
-        <Text>{node.title}</Text>
-      </View>
+      <NoteTree node={node} />
     )
   })
 }
