@@ -1,11 +1,13 @@
-type Note = {
-    id: string;
+type Leaf = Node & {
     title: string;
     content: string;
-    children: Partial<Note>[];
+}
+
+type Node = {
+    id: number;
+    children: Node[]
 }
 
 
-
-export type { Note };
+export type { Leaf, Node };
 

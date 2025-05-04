@@ -1,10 +1,18 @@
 import { useState } from 'react';
 import { ScrollView, StyleSheet, Text, View } from 'react-native';
-import { Note } from '../types';
+
+import { Leaf, Node } from '../types';
+
+
 
 export default function ExplorerScreen() {
-  let [rootNote, setRootNode] = useState<Note |null>(null);
-
+  let [rootNote, setRootNode] = useState<Node |null>(null);
+  let a : Leaf = {
+    id: 1,
+    children: [],
+    title: 'Hello',
+    content: 'World',
+  }
 
   return (
     <ScrollView style={styles.container}>
@@ -17,8 +25,24 @@ export default function ExplorerScreen() {
 
 
 //this returns a component which uses DnDKit
-function NoteTree(notes: note[]){
-
+//this is using implicit structure - non-leafs are traversible, while leafs are displayable
+function NoteTree(note: Note[]){
+  if (note.children.length > 0){
+  note.map((note) => {
+    return (
+      <View>
+        <Text>{note.title}</Text>
+      </View>
+    )
+  })
+}
+else{
+  return (
+    <View>
+      <Text>{note.title}</Text>
+    </View>
+  )
+}
 }
 
 const styles = StyleSheet.create({
