@@ -1,48 +1,109 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 
 import { TestRoot } from '../fixtures';
 import { Node } from '../types';
 
-
 export default function ExplorerScreen() {
-  let [rootNote, setRootNode] = useState<Node |null>(TestRoot);
+  const [rootNote, setRootNode] = useState<Node | null>(TestRoot);
+  const [focusedNode, setFocusedNode] = useState<Node | null>(TestRoot);
 
   return (
     <ScrollView style={styles.container}>
-        {rootNote && <NoteTree node={rootNote} />}
+      {rootNote && (
+        <NoteTree 
+          node={rootNote} 
+          focusedNode={focusedNode}
+          setFocusedNode={setFocusedNode}
+          isRoot={true}
+          isOnPathToFocused={true}
+        />
+      )}
     </ScrollView>
   );
 }
 
+function NoteTree({ 
+  node, 
+  focusedNode, 
+  setFocusedNode,
+  isRoot = false,
+  isOnPathToFocused = false
+}: { 
+  node: Node;
+  focusedNode: Node | null;
+  setFocusedNode: (node: Node | null) => void;
+  isRoot?: boolean;
+  isOnPathToFocused?: boolean;
+}) {
+  const isFocused = focusedNode?.id === node.id;
+  const shouldRenderChildren = (isOnPathToFocused || isFocused) && node.children.length > 0;
 
-//this returns a component which uses DnDKit
-//this is using implicit structure - non-leafs are traversible, while leafs are displayable
-//this is a recursive function which returns a component has the folowing features:
-//definition of focused here: this meants that the NoteTree leading to the NoteTree is rendered, e.g. all ancestors in the tree the current note tree is a leaf of, and the node and this node's children are rendered, but nothing past the direct children are rendered.
-//1. it detects when the part of the screen being Pressed is above the rendered node such that if any node is focused and the area above the rendered node is pressed, the parent node is focused unless the node has no parent.
-//2. it has a an ability such that if any NoteTree component is focused (e.g. was last pressed), and any child NoteTree below the rendered node is pressed, that child node is focused.
-//3. it has an ability such that if any node is focused and the area above the rendered node (in the form of a notetree component) is pressed, the parent node is focused unless the node has no parent.
-function NoteTree({node}: {node: Node}){
-  if (node.children.length > 0){
-    return(
-  <View className='tree-row'>
-  <View>
-      <Text style={{height: 100, width: 100 }}>{node.title}</Text>
-    </View>
-{node.children.map((node) => {return <NoteTree key={node.id} node={node} />})}
-</View>
-    )
-}
-else{
+  const handlePress = () => {
+    setFocusedNode(node);
+  };
+
+  const handlePressAbove = () => {
+    if (!isRoot) {
+      // Find the parent node
+      const parent = findParent(TestRoot, node);
+      if (parent) {
+        setFocusedNode(parent);
+      }
+    }
+  };
+
+  // Find which child is on the path to the focused node
+  const getChildOnPath = () => {
+    if (!focusedNode) return null;
+    return node.children.find(child => isOnPathToFocusedNode(child, focusedNode));
+  };
+
+  const childOnPath = getChildOnPath();
+
   return (
-    //not actually sure that we need this to be a different class than tree-row.
-    //we could just treat it as a special case.
     <View>
-      <Text style={{height: 100, width: 100}}>{node.title}</Text>
+      <Pressable onPress={handlePress}>
+        <View style={[styles.nodeContainer, isFocused && styles.focusedNode]}>
+          <Text style={styles.nodeTitle}>{node.title}</Text>
+        </View>
+      </Pressable>
+      
+      {shouldRenderChildren && (
+        <View style={styles.childrenContainer}>
+          <Pressable style={styles.aboveArea} onPress={handlePressAbove} />
+          {node.children.map(child => (
+            <NoteTree
+              key={child.id}
+              node={child}
+              focusedNode={focusedNode}
+              setFocusedNode={setFocusedNode}
+              isOnPathToFocused={child.id === childOnPath?.id}
+            />
+          ))}
+        </View>
+      )}
     </View>
-  )
+  );
 }
+
+// Helper function to check if a node is on the path to the focused node
+function isOnPathToFocusedNode(node: Node, focusedNode: Node): boolean {
+  if (node.id === focusedNode.id) return true;
+  return node.children.some(child => isOnPathToFocusedNode(child, focusedNode));
+}
+
+// Helper function to find the parent of a node
+function findParent(root: Node, target: Node): Node | null {
+  if (!root.children) return null;
+  if (root.children.some(child => child.id === target.id)) return root;
+  
+  for (const child of root.children) {
+    const parent = findParent(child, target);
+    if (parent) return parent;
+  }
+  
+  return null;
 }
 
 const styles = StyleSheet.create({
@@ -50,21 +111,23 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#fff',
   },
-  content: {
+  nodeContainer: {
     padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  text: {
-    color: '#000',
+  focusedNode: {
+    backgroundColor: '#f0f0f0',
+  },
+  nodeTitle: {
     fontSize: 16,
+    color: '#000',
   },
-  headerImage: {
-    color: '#808080',
-    bottom: -90,
-    left: -35,
-    position: 'absolute',
+  childrenContainer: {
+    marginLeft: 20,
   },
-  titleContainer: {
-    flexDirection: 'row',
-    gap: 8,
+  aboveArea: {
+    height: 20,
+    backgroundColor: 'transparent',
   },
 });

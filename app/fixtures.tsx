@@ -9,11 +9,11 @@ const TestRoot: Node = {
                     {
                         id: 3,
                         children: [],
-                        title: 'title. depth: 3',
+                        title: 'id3 title. depth: 3',
                         content: 'this is a leaf',
                     }
                 ],
-                title: 'title. depth: 2',
+                title: 'id2 title. depth: 2',
                 content: 'this is an internal node',
             },
     {
@@ -22,11 +22,11 @@ const TestRoot: Node = {
                     {
                         id: 5,
                         children: [],
-                        title: 'title. depth: 3',
+                        title: 'id5 title. depth: 3',
                         content: 'this is a leaf',
                     }
                 ],
-                title: 'title. depth: 2',
+                title: 'id4 title. depth: 2',
                 content: 'this is an internal node',
             },
 
