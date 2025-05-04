@@ -4,9 +4,41 @@ import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { TestRoot } from '../fixtures';
 import { Node } from '../types';
 
+// Add a new type that includes the path marking
+type MarkedNode = Node & {
+  isOnPathToFocused?: boolean;
+};
+
 export default function ExplorerScreen() {
-  const [rootNote, setRootNode] = useState<Node | null>(TestRoot);
-  const [focusedNode, setFocusedNode] = useState<Node | null>(TestRoot);
+  const [rootNote, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+  const [focusedNode, setFocusedNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+
+  const handleSetFocusedNode = (node: MarkedNode) => {
+    // First, clear all path markings
+    const clearPathMarkings = (n: MarkedNode) => {
+      n.isOnPathToFocused = false;
+      n.children.forEach(clearPathMarkings);
+    };
+    if (rootNote) clearPathMarkings(rootNote);
+
+    // Then mark the path to the new focused node
+    const markPathToFocused = (n: MarkedNode, target: MarkedNode): boolean => {
+      if (n.id === target.id) {
+        n.isOnPathToFocused = true;
+        return true;
+      }
+      for (const child of n.children) {
+        if (markPathToFocused(child, target)) {
+          n.isOnPathToFocused = true;
+          return true;
+        }
+      }
+      return false;
+    };
+
+    if (rootNote) markPathToFocused(rootNote, node);
+    setFocusedNode(node);
+  };
 
   return (
     <ScrollView style={styles.container}>
@@ -14,9 +46,8 @@ export default function ExplorerScreen() {
         <NoteTree 
           node={rootNote} 
           focusedNode={focusedNode}
-          setFocusedNode={setFocusedNode}
+          setFocusedNode={handleSetFocusedNode}
           isRoot={true}
-          isOnPathToFocused={true}
         />
       )}
     </ScrollView>
@@ -27,17 +58,15 @@ function NoteTree({
   node, 
   focusedNode, 
   setFocusedNode,
-  isRoot = false,
-  isOnPathToFocused = false
+  isRoot = false
 }: { 
-  node: Node;
-  focusedNode: Node | null;
-  setFocusedNode: (node: Node | null) => void;
+  node: MarkedNode;
+  focusedNode: MarkedNode | null;
+  setFocusedNode: (node: MarkedNode) => void;
   isRoot?: boolean;
-  isOnPathToFocused?: boolean;
 }) {
   const isFocused = focusedNode?.id === node.id;
-  const shouldRenderChildren = (isOnPathToFocused || isFocused) && node.children.length > 0;
+  const shouldRenderChildren = (node.isOnPathToFocused || isFocused) && node.children.length > 0;
 
   const handlePress = () => {
     setFocusedNode(node);
@@ -46,20 +75,12 @@ function NoteTree({
   const handlePressAbove = () => {
     if (!isRoot) {
       // Find the parent node
-      const parent = findParent(TestRoot, node);
+      const parent = findParent(TestRoot as MarkedNode, node);
       if (parent) {
         setFocusedNode(parent);
       }
     }
   };
-
-  // Find which child is on the path to the focused node
-  const getChildOnPath = () => {
-    if (!focusedNode) return null;
-    return node.children.find(child => isOnPathToFocusedNode(child, focusedNode));
-  };
-
-  const childOnPath = getChildOnPath();
 
   return (
     <View>
@@ -78,7 +99,7 @@ function NoteTree({
               node={child}
               focusedNode={focusedNode}
               setFocusedNode={setFocusedNode}
-              isOnPathToFocused={child.id === childOnPath?.id}
+              isRoot={false}
             />
           ))}
         </View>
@@ -87,14 +108,8 @@ function NoteTree({
   );
 }
 
-// Helper function to check if a node is on the path to the focused node
-function isOnPathToFocusedNode(node: Node, focusedNode: Node): boolean {
-  if (node.id === focusedNode.id) return true;
-  return node.children.some(child => isOnPathToFocusedNode(child, focusedNode));
-}
-
 // Helper function to find the parent of a node
-function findParent(root: Node, target: Node): Node | null {
+function findParent(root: MarkedNode, target: MarkedNode): MarkedNode | null {
   if (!root.children) return null;
   if (root.children.some(child => child.id === target.id)) return root;
   
