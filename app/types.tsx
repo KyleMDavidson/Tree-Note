@@ -1,9 +1,8 @@
-type Leaf = Node & {
-    title: string;
-    content: string;
-}
+type Leaf = Node
 
 type Node = {
+    title: string;
+    content: string;
     id: number;
     children: Node[]
 }
