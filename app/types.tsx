@@ -7,6 +7,19 @@ type Node = {
     children: Node[]
 }
 
+type TouchState = {
+    startX: number;
+    startY: number;
+    currentX: number;
+    currentY: number;
+    isTracking: boolean;
+}
 
-export type { Leaf, Node };
+type HoverState = {
+    isHovering: boolean;
+    hoverStartTime: number | null;
+    hoveredNodeId: number | null;
+}
+
+export type { HoverState, Leaf, Node, TouchState };
 

@@ -1,17 +1,37 @@
-import { useState } from 'react';
-import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
 import { TestRoot } from '../fixtures';
-import { Node } from '../types';
+import { HoverState, Node } from '../types';
 
 // Add a new type that includes the path marking
 type MarkedNode = Node & {
   isOnPathToFocused?: boolean;
+  isExpanded?: boolean;
+};
+
+// Helper function to expand a node
+const expandNode = (node: MarkedNode, targetId: number): boolean => {
+  if (node.id === targetId) {
+    node.isExpanded = true;
+    return true;
+  }
+  for (const child of node.children) {
+    if (expandNode(child, targetId)) {
+      return true;
+    }
+  }
+  return false;
 };
 
 export default function ExplorerScreen() {
   const [rootNote, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
   const [focusedNode, setFocusedNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+  const [hoverState, setHoverState] = useState<HoverState>({
+    isHovering: false,
+    hoverStartTime: null,
+    hoveredNodeId: null
+  });
 
   const handleSetFocusedNode = (node: MarkedNode) => {
     // First, clear all path markings
@@ -41,16 +61,20 @@ export default function ExplorerScreen() {
   };
 
   return (
-    <ScrollView style={styles.container}>
+    <View style={styles.container}>
       {rootNote && (
         <NoteTree 
           node={rootNote} 
           focusedNode={focusedNode}
           setFocusedNode={handleSetFocusedNode}
+          hoverState={hoverState}
+          setHoverState={setHoverState}
+          rootNote={rootNote}
+          setRootNode={setRootNode}
           isRoot={true}
         />
       )}
-    </ScrollView>
+    </View>
   );
 }
 
@@ -58,15 +82,60 @@ function NoteTree({
   node, 
   focusedNode, 
   setFocusedNode,
+  hoverState,
+  setHoverState,
+  rootNote,
+  setRootNode,
   isRoot = false
 }: { 
   node: MarkedNode;
   focusedNode: MarkedNode | null;
   setFocusedNode: (node: MarkedNode) => void;
+  hoverState: HoverState;
+  setHoverState: (state: HoverState) => void;
+  rootNote: MarkedNode;
+  setRootNode: (node: MarkedNode) => void;
   isRoot?: boolean;
 }) {
   const isFocused = focusedNode?.id === node.id;
-  const shouldRenderChildren = (node.isOnPathToFocused || isFocused) && node.children.length > 0;
+  const shouldRenderChildren = node.isExpanded && node.children.length > 0;
+  const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handlePressIn = () => {
+    // Clear any existing timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+    }
+
+    // Set new hover state
+    setHoverState({
+      isHovering: true,
+      hoverStartTime: Date.now(),
+      hoveredNodeId: node.id
+    });
+
+    // Set timeout for expansion
+    hoverTimeoutRef.current = setTimeout(() => {
+      if (rootNote) {
+        expandNode(rootNote, node.id);
+        setRootNode({ ...rootNote });
+      }
+    }, 1000);
+  };
+
+  const handlePressOut = () => {
+    // Clear the timeout
+    if (hoverTimeoutRef.current) {
+      clearTimeout(hoverTimeoutRef.current);
+      hoverTimeoutRef.current = null;
+    }
+
+    setHoverState({
+      isHovering: false,
+      hoverStartTime: null,
+      hoveredNodeId: null
+    });
+  };
 
   const handlePress = () => {
     setFocusedNode(node);
@@ -74,7 +143,6 @@ function NoteTree({
 
   const handlePressAbove = () => {
     if (!isRoot) {
-      // Find the parent node
       const parent = findParent(TestRoot as MarkedNode, node);
       if (parent) {
         setFocusedNode(parent);
@@ -82,11 +150,24 @@ function NoteTree({
     }
   };
 
+  // Cleanup hover timeout on unmount
+  useEffect(() => {
+    return () => {
+      if (hoverTimeoutRef.current) {
+        clearTimeout(hoverTimeoutRef.current);
+      }
+    };
+  }, []);
+
   return (
     <View>
-      <Pressable onPress={handlePress}>
+      <Pressable 
+        onPress={handlePress}
+        onPressIn={handlePressIn}
+        onPressOut={handlePressOut}
+      >
         <View style={[styles.nodeContainer, isFocused && styles.focusedNode]}>
-          <Text style={styles.nodeTitle}>{node.title}</Text>
+          <NoteData title={node.title} content={node.content} />
         </View>
       </Pressable>
       
@@ -99,6 +180,10 @@ function NoteTree({
               node={child}
               focusedNode={focusedNode}
               setFocusedNode={setFocusedNode}
+              hoverState={hoverState}
+              setHoverState={setHoverState}
+              rootNote={rootNote}
+              setRootNode={setRootNode}
               isRoot={false}
             />
           ))}
@@ -106,6 +191,14 @@ function NoteTree({
       )}
     </View>
   );
+}
+
+const NoteData = ({title, content}: {title: string, content: string}) => {
+  return (
+    <View>
+      <Text>{title}</Text>
+    </View>
+  )
 }
 
 // Helper function to find the parent of a node
