@@ -7,21 +7,6 @@ import { HoverState, Node } from '../types';
 // Add a new type that includes the path marking
 type MarkedNode = Node & {
   isOnPathToFocused?: boolean;
-  isExpanded?: boolean;
-};
-
-// Helper function to expand a node
-const expandNode = (node: MarkedNode, targetId: number): boolean => {
-  if (node.id === targetId) {
-    node.isExpanded = true;
-    return true;
-  }
-  for (const child of node.children) {
-    if (expandNode(child, targetId)) {
-      return true;
-    }
-  }
-  return false;
 };
 
 export default function ExplorerScreen() {
@@ -69,8 +54,6 @@ export default function ExplorerScreen() {
           setFocusedNode={handleSetFocusedNode}
           hoverState={hoverState}
           setHoverState={setHoverState}
-          rootNote={rootNote}
-          setRootNode={setRootNode}
           isRoot={true}
         />
       )}
@@ -84,8 +67,6 @@ function NoteTree({
   setFocusedNode,
   hoverState,
   setHoverState,
-  rootNote,
-  setRootNode,
   isRoot = false
 }: { 
   node: MarkedNode;
@@ -93,12 +74,11 @@ function NoteTree({
   setFocusedNode: (node: MarkedNode) => void;
   hoverState: HoverState;
   setHoverState: (state: HoverState) => void;
-  rootNote: MarkedNode;
-  setRootNode: (node: MarkedNode) => void;
   isRoot?: boolean;
 }) {
   const isFocused = focusedNode?.id === node.id;
-  const shouldRenderChildren = node.isExpanded && node.children.length > 0;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const shouldRenderChildren = isExpanded && node.children.length > 0;
   const hoverTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const handlePressIn = () => {
@@ -116,10 +96,7 @@ function NoteTree({
 
     // Set timeout for expansion
     hoverTimeoutRef.current = setTimeout(() => {
-      if (rootNote) {
-        expandNode(rootNote, node.id);
-        setRootNode({ ...rootNote });
-      }
+      setIsExpanded(true);
     }, 1000);
   };
 
@@ -182,8 +159,6 @@ function NoteTree({
               setFocusedNode={setFocusedNode}
               hoverState={hoverState}
               setHoverState={setHoverState}
-              rootNote={rootNote}
-              setRootNode={setRootNode}
               isRoot={false}
             />
           ))}
