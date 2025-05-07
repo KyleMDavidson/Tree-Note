@@ -1,0 +1,13 @@
+Copyright © 2025 Kyle Macaulay Davidson All rights reserved.
+
+This software and its accompanying documentation are the exclusive property of Kyle Macaulay Davidson and Ian Douglas Davidson. The software and all associated materials are protected by international copyright laws and treaties.
+
+Reproduction and Reuse Restrictions:
+
+    No Reproduction: No part of this software, including but not limited to the source code, object code, documentation, and any accompanying materials, may be reproduced, copied, or duplicated in any form or by any means, electronic or mechanical, without the prior written permission of the author12.
+
+    No Distribution: Distribution of this software, in whole or in part, is strictly prohibited without the explicit consent of the author. This includes but is not limited to sharing, selling, renting, leasing, or lending the software to any third party3.
+
+    No Derivative Works: The creation of derivative works based on this software is not permitted. This includes any modification, adaptation, translation, or other alterations of the software or its components4.
+
+    No Public Display or Performance: The software may not be publicly displayed, performed, or communicated without the author's express permission.
