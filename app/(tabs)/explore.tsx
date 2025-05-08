@@ -58,6 +58,7 @@ export default function ExplorerScreen() {
   );
 }
 
+//this is our primary recursive note component.
 function NoteTree({ 
   node, 
   focusedNode, 
@@ -106,18 +107,19 @@ function NoteTree({
 
   return (
     <View>
-      <Pressable 
-        onStartShouldSetResponder={() => true}
-        onMoveShouldSetResponder={() => true}
-        onResponderGrant={handleResponderGrant}
-        onResponderMove={handleResponderMove}
-        onResponderRelease={handleResponderRelease}
-        onResponderTerminate={handleResponderRelease}
-      >
-        <View style={[
-          styles.nodeContainer, 
-          isFocused && styles.focusedNode
-        ]}>
+      <Pressable>
+        <View 
+          onStartShouldSetResponder={(e) => true}
+          onMoveShouldSetResponder={(e) => true}
+          onResponderGrant={handleResponderGrant}
+          onResponderMove={handleResponderMove}
+          onResponderRelease={handleResponderRelease}
+          onResponderTerminate={handleResponderRelease}
+          style={[
+            styles.nodeContainer, 
+            isFocused && styles.focusedNode
+          ]}
+        >
           <Text style={styles.nodeTitle}>{node.title}</Text>
         </View>
       </Pressable>
