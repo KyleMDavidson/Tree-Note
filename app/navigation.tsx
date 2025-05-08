@@ -1,5 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
+import { SafeAreaView, Text } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { IconSymbol } from '@/components/ui/IconSymbol';
 
@@ -13,10 +15,10 @@ console.log('HomeScreen component:', HomeScreen);
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
-
   return (
-    // <GestureHandlerRootView style={{ flex: 1 }}>
-      <NavigationContainer>
+    <SafeAreaView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer fallback={<Text>Loading...</Text>}>
         <Tab.Navigator
           initialRouteName="Notes"
           screenOptions={{
@@ -40,6 +42,7 @@ export default function Navigation() {
           />
         </Tab.Navigator>
       </NavigationContainer>
-    // </GestureHandlerRootView>
+    </GestureHandlerRootView>
+    </SafeAreaView>
   );
 } 
