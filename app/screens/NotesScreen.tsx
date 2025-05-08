@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import Animated, { useAnimatedStyle } from 'react-native-reanimated';
+import { useAnimatedStyle } from 'react-native-reanimated';
 
 import { TestRoot } from '../../src/models/fixtures';
 import { Node } from '../../src/models/types';
@@ -104,29 +104,7 @@ function NoteTree({
         setFocusedNode(parent);
       }
     }
-  };
-
-  const gesture = Gesture.Pan()
-    .onStart(() => {
-      console.log('Gesture start', node.title);
-      setTouchStartTime(Date.now());
-      setCurrentTouchNode(node);
-    })
-    .onUpdate(() => {
-      if (touchStartTime && Date.now() - touchStartTime >= 1000) {
-        handlePress();
-        setTouchStartTime(null);
-      }
-    })
-    .onEnd(() => {
-      setTouchStartTime(null);
-      setCurrentTouchNode(null);
-    })
-    .onFinalize(() => {
-      setTouchStartTime(null);
-      setCurrentTouchNode(null);
-    });
-
+  }
   const animatedStyle = useAnimatedStyle(() => {
     return {
       backgroundColor: isBeingPressed ? '#e0e0e0' : isFocused ? '#f0f0f0' : 'transparent',
@@ -135,22 +113,10 @@ function NoteTree({
 
   return (
     <View>
-      <GestureDetector gesture={gesture}>
-        <Animated.View 
-          style={[
-            styles.nodeContainer,
-            animatedStyle
-          ]}
-        >
-          <Text style={styles.nodeTitle}>{node.title}</Text>
-        </Animated.View>
-      </GestureDetector>
+         <Text style={styles.nodeTitle}>{node.title}</Text>
       
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
-          <GestureDetector gesture={Gesture.Tap().onStart(handlePressAbove)}>
-            <View style={styles.aboveArea} />
-          </GestureDetector>
           {node.children.map(child => (
             <NoteTree
               key={child.id}
@@ -169,6 +135,7 @@ function NoteTree({
     </View>
   );
 }
+
 
 // Helper function to find the parent of a node
 function findParent(root: MarkedNode, target: MarkedNode): MarkedNode | null {
@@ -194,7 +161,7 @@ const styles = StyleSheet.create({
     borderBottomColor: '#eee',
   },
   nodeTitle: {
-    fontSize: 16,
+    fontSize: 20,
     color: '#000',
   },
   childrenContainer: {
