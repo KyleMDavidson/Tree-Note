@@ -1,75 +1,191 @@
-import { Image } from 'expo-image';
-import { Platform, StyleSheet } from 'react-native';
+import { useState } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
+import { TestRoot } from '../../src/models/fixtures';
+import { Node } from '../../src/models/types';
 
-export default function HomeScreen() {
+// Add a new type that includes the path marking
+type MarkedNode = Node & {
+  isOnPathToFocused?: boolean;
+};
+
+export default function ExplorerScreen() {
+  const [rootNote, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+  const [focusedNode, setFocusedNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+
+  const handleSetFocusedNode = (node: MarkedNode) => {
+    // Create a new copy of the root note to trigger a re-render
+    const newRoot = { ...rootNote! };
+    
+    // First, clear all path markings
+    const clearPathMarkings = (n: MarkedNode) => {
+      n.isOnPathToFocused = false;
+      n.children.forEach(clearPathMarkings);
+    };
+    clearPathMarkings(newRoot);
+
+    // Then mark the path to the new focused node
+    const markPathToFocused = (n: MarkedNode, target: MarkedNode): boolean => {
+      if (n.id === target.id) {
+        n.isOnPathToFocused = true;
+        return true;
+      }
+      for (const child of n.children) {
+        if (markPathToFocused(child, target)) {
+          n.isOnPathToFocused = true;
+          return true;
+        }
+      }
+      return false;
+    };
+
+    markPathToFocused(newRoot, node);
+    setRootNode(newRoot);
+    setFocusedNode(node);
+  };
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          {`Tap the Explore tab to learn more about what's included in this starter app.`}
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          {`When you're ready, run `}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      {rootNote && 
+          <NoteTree 
+            node={rootNote} 
+            focusedNode={focusedNode}
+            setFocusedNode={handleSetFocusedNode}
+            isRoot={true}
+          />
+      }
+    </View>
   );
 }
 
+//this is our primary recursive note component.
+function NoteTree({ 
+  node, 
+  focusedNode, 
+  setFocusedNode,
+  isRoot = false
+}: { 
+  node: MarkedNode;
+  focusedNode: MarkedNode | null;
+  setFocusedNode: (node: MarkedNode) => void;
+  isRoot?: boolean;
+}) {
+  const isFocused = focusedNode?.id === node.id;
+  const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
+  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
+
+  const handlePress = () => {
+    setFocusedNode(node);
+  };
+
+  const handlePressAbove = () => {
+    if (!isRoot) {
+      const parent = findParent(TestRoot as MarkedNode, node);
+      if (parent) {
+        setFocusedNode(parent);
+      }
+    }
+  };
+
+  const handleResponderGrant = () => {
+    // Only start the timer when the touch enters this component
+    console.log('handleResponderGrant', node.title);
+    setTouchStartTime(Date.now());
+  };
+
+  const handleResponderMove = () => {
+    // Only check the timer if we started tracking it in this component
+    if (touchStartTime && Date.now() - touchStartTime >= 1000) {
+      handlePress();
+      setTouchStartTime(null);
+    }
+  };
+
+  const handleResponderRelease = () => {
+    setTouchStartTime(null);
+  };
+
+  return (
+    <View>
+      <Pressable>
+        <View 
+          onStartShouldSetResponder={(e) => {console.log(`onStartShouldSetResponder in node ${node.title}`);return true}}
+          onMoveShouldSetResponder={(e) => {
+            // Take responder when moving into this component if we're not already tracking
+            console.log(`onMoveShouldSetResponder in node ${node.title}`, e);
+            return !touchStartTime;
+          }}
+          onResponderTerminationRequest={(e) => {
+            // Allow responder to be taken by child components
+            console.log(`onResponderTerminationRequest in node ${node.title}`, e);
+            return true;
+          }}
+          onResponderGrant={handleResponderGrant}
+          onResponderMove={handleResponderMove}
+          onResponderRelease={handleResponderRelease}
+          onResponderTerminate={handleResponderRelease}
+          style={[
+            styles.nodeContainer, 
+            isFocused && styles.focusedNode
+          ]}
+        >
+          <Text style={styles.nodeTitle}>{node.title}</Text>
+        </View>
+      </Pressable>
+      
+      {shouldRenderChildren && (
+        <View style={styles.childrenContainer}>
+          <Pressable style={styles.aboveArea} onPress={handlePressAbove} />
+          {node.children.map(child => (
+            <NoteTree
+              key={child.id}
+              node={child}
+              focusedNode={focusedNode}
+              setFocusedNode={setFocusedNode}
+              isRoot={false}
+            />
+          ))}
+        </View>
+      )}
+    </View>
+  );
+}
+
+// Helper function to find the parent of a node
+function findParent(root: MarkedNode, target: MarkedNode): MarkedNode | null {
+  if (!root.children) return null;
+  if (root.children.some(child => child.id === target.id)) return root;
+  
+  for (const child of root.children) {
+    const parent = findParent(child, target);
+    if (parent) return parent;
+  }
+  
+  return null;
+}
+
 const styles = StyleSheet.create({
-  titleContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+  container: {
+    flex: 1,
+    backgroundColor: '#fff',
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  nodeContainer: {
+    padding: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#eee',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  focusedNode: {
+    backgroundColor: '#f0f0f0',
+  },
+  nodeTitle: {
+    fontSize: 16,
+    color: '#000',
+  },
+  childrenContainer: {
+    marginLeft: 20,
+  },
+  aboveArea: {
+    height: 20,
+    backgroundColor: 'transparent',
   },
 });
