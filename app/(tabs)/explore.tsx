@@ -109,8 +109,17 @@ function NoteTree({
     <View>
       <Pressable>
         <View 
-          onStartShouldSetResponder={(e) => true}
-          onMoveShouldSetResponder={(e) => true}
+          onStartShouldSetResponder={(e) => {console.log(`onStartShouldSetResponder in node ${node.title}`);return true}}
+          onMoveShouldSetResponder={(e) => {
+            // Take responder when moving into this component if we're not already tracking
+            console.log(`onMoveShouldSetResponder in node ${node.title}`, e);
+            return !touchStartTime;
+          }}
+          onResponderTerminationRequest={(e) => {
+            // Allow responder to be taken by child components
+            console.log(`onResponderTerminationRequest in node ${node.title}`, e);
+            return true;
+          }}
           onResponderGrant={handleResponderGrant}
           onResponderMove={handleResponderMove}
           onResponderRelease={handleResponderRelease}
