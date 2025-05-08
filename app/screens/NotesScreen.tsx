@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
-import { useAnimatedStyle } from 'react-native-reanimated';
 
 import { TestRoot } from '../../src/models/fixtures';
 import { Node } from '../../src/models/types';
@@ -49,6 +48,7 @@ const NotesScreen = () => {
   };
 
   return (
+    //superior for performance to pan responder (which is more liable to suffer locks on the thread)
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={Gesture.Pan()}>
         <View style={styles.container}>
@@ -105,15 +105,10 @@ function NoteTree({
       }
     }
   }
-  const animatedStyle = useAnimatedStyle(() => {
-    return {
-      backgroundColor: isBeingPressed ? '#e0e0e0' : isFocused ? '#f0f0f0' : 'transparent',
-    };
-  });
 
   return (
     <View>
-         <Text style={styles.nodeTitle}>{node.title}</Text>
+         <Text onPress={handlePress} style={styles.nodeTitle}>{node.title}</Text>
       
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
