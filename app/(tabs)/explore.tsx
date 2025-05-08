@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 
-import { TestRoot } from '../fixtures';
-import { Node } from '../types';
+import { TestRoot } from '../../src/models/fixtures';
+import { Node } from '../../src/models/types';
 
 // Add a new type that includes the path marking
 type MarkedNode = Node & {
@@ -71,6 +71,7 @@ function NoteTree({
 }) {
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
+  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
 
   const handlePress = () => {
     setFocusedNode(node);
@@ -85,9 +86,34 @@ function NoteTree({
     }
   };
 
+  const handleResponderGrant = () => {
+    // Only start the timer when the touch enters this component
+    console.log('handleResponderGrant', node.title);
+    setTouchStartTime(Date.now());
+  };
+
+  const handleResponderMove = () => {
+    // Only check the timer if we started tracking it in this component
+    if (touchStartTime && Date.now() - touchStartTime >= 1000) {
+      handlePress();
+      setTouchStartTime(null);
+    }
+  };
+
+  const handleResponderRelease = () => {
+    setTouchStartTime(null);
+  };
+
   return (
     <View>
-      <Pressable onPressOut={handlePress}>
+      <Pressable 
+        onStartShouldSetResponder={() => true}
+        onMoveShouldSetResponder={() => true}
+        onResponderGrant={handleResponderGrant}
+        onResponderMove={handleResponderMove}
+        onResponderRelease={handleResponderRelease}
+        onResponderTerminate={handleResponderRelease}
+      >
         <View style={[
           styles.nodeContainer, 
           isFocused && styles.focusedNode

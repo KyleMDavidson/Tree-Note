@@ -1,6 +1,6 @@
 import { Node } from "./types";
 
-const TestRoot: Node = {
+export const TestRoot: Node = {
         id: 1,
         children: [
             {
@@ -36,4 +36,5 @@ const TestRoot: Node = {
         content: 'this is a root node',
 }
 
-export { TestRoot };
+// Add default export to satisfy Expo Router
+export default {};
