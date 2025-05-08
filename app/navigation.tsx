@@ -1,9 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { NavigationContainer } from '@react-navigation/native';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { IconSymbol } from '@/components/ui/IconSymbol';
-import { useColorScheme } from '@/hooks/useColorScheme';
 
 // Import screens directly
 import HomeScreen from './screens/HomeScreen';
@@ -15,12 +13,12 @@ console.log('HomeScreen component:', HomeScreen);
 const Tab = createBottomTabNavigator();
 
 export default function Navigation() {
-  const colorScheme = useColorScheme();
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    // <GestureHandlerRootView style={{ flex: 1 }}>
       <NavigationContainer>
         <Tab.Navigator
+          initialRouteName="Notes"
           screenOptions={{
             headerShown: false,
           }}>
@@ -42,6 +40,6 @@ export default function Navigation() {
           />
         </Tab.Navigator>
       </NavigationContainer>
-    </GestureHandlerRootView>
+    // </GestureHandlerRootView>
   );
 } 
