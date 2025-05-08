@@ -87,7 +87,7 @@ function NoteTree({
 
   return (
     <View>
-      <Pressable onPress={handlePress}>
+      <Pressable onPressOut={handlePress}>
         <View style={[
           styles.nodeContainer, 
           isFocused && styles.focusedNode
