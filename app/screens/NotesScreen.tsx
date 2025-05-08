@@ -1,5 +1,7 @@
 import { useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
+import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
+import Animated, { useAnimatedStyle } from 'react-native-reanimated';
 
 import { TestRoot } from '../../src/models/fixtures';
 import { Node } from '../../src/models/types';
@@ -9,9 +11,11 @@ type MarkedNode = Node & {
   isOnPathToFocused?: boolean;
 };
 
-export default function ExplorerScreen() {
+const NotesScreen = () => {
   const [rootNote, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
   const [focusedNode, setFocusedNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
+  const [currentTouchNode, setCurrentTouchNode] = useState<MarkedNode | null>(null);
 
   const handleSetFocusedNode = (node: MarkedNode) => {
     // Create a new copy of the root note to trigger a re-render
@@ -45,34 +49,49 @@ export default function ExplorerScreen() {
   };
 
   return (
-    <View style={styles.container}>
-      {rootNote && 
-          <NoteTree 
-            node={rootNote} 
-            focusedNode={focusedNode}
-            setFocusedNode={handleSetFocusedNode}
-            isRoot={true}
-          />
-      }
-    </View>
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <GestureDetector gesture={Gesture.Pan()}>
+        <View style={styles.container}>
+          {rootNote && 
+              <NoteTree 
+                node={rootNote} 
+                focusedNode={focusedNode}
+                setFocusedNode={handleSetFocusedNode}
+                isRoot={true}
+                touchStartTime={touchStartTime}
+                setTouchStartTime={setTouchStartTime}
+                currentTouchNode={currentTouchNode}
+                setCurrentTouchNode={setCurrentTouchNode}
+              />
+          }
+        </View>
+      </GestureDetector>
+    </GestureHandlerRootView>
   );
 }
 
-//this is our primary recursive note component.
 function NoteTree({ 
   node, 
   focusedNode, 
   setFocusedNode,
-  isRoot = false
+  isRoot = false,
+  touchStartTime,
+  setTouchStartTime,
+  currentTouchNode,
+  setCurrentTouchNode
 }: { 
   node: MarkedNode;
   focusedNode: MarkedNode | null;
   setFocusedNode: (node: MarkedNode) => void;
   isRoot?: boolean;
+  touchStartTime: number | null;
+  setTouchStartTime: (time: number | null) => void;
+  currentTouchNode: MarkedNode | null;
+  setCurrentTouchNode: (node: MarkedNode | null) => void;
 }) {
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
-  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
+  const isBeingPressed = currentTouchNode?.id === node.id;
 
   const handlePress = () => {
     setFocusedNode(node);
@@ -87,55 +106,51 @@ function NoteTree({
     }
   };
 
-  const handleResponderGrant = () => {
-    // Only start the timer when the touch enters this component
-    console.log('handleResponderGrant', node.title);
-    setTouchStartTime(Date.now());
-  };
-
-  const handleResponderMove = () => {
-    // Only check the timer if we started tracking it in this component
-    if (touchStartTime && Date.now() - touchStartTime >= 1000) {
-      handlePress();
+  const gesture = Gesture.Pan()
+    .onStart(() => {
+      console.log('Gesture start', node.title);
+      setTouchStartTime(Date.now());
+      setCurrentTouchNode(node);
+    })
+    .onUpdate(() => {
+      if (touchStartTime && Date.now() - touchStartTime >= 1000) {
+        handlePress();
+        setTouchStartTime(null);
+      }
+    })
+    .onEnd(() => {
       setTouchStartTime(null);
-    }
-  };
+      setCurrentTouchNode(null);
+    })
+    .onFinalize(() => {
+      setTouchStartTime(null);
+      setCurrentTouchNode(null);
+    });
 
-  const handleResponderRelease = () => {
-    setTouchStartTime(null);
-  };
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      backgroundColor: isBeingPressed ? '#e0e0e0' : isFocused ? '#f0f0f0' : 'transparent',
+    };
+  });
 
   return (
     <View>
-      <Pressable>
-        <View 
-          onStartShouldSetResponder={(e) => {console.log(`onStartShouldSetResponder in node ${node.title}`);return true}}
-          onMoveShouldSetResponder={(e) => {
-            // Take responder when moving into this component if we're not already tracking
-            console.log(`onMoveShouldSetResponder in node ${node.title}`, e);
-            return !touchStartTime;
-          }}
-          onResponderTerminationRequest={(e) => {
-            // Allow responder to be taken by child components
-            console.log(`onResponderTerminationRequest in node ${node.title}`, e);
-            return true;
-          }}
-          onResponderGrant={handleResponderGrant}
-          onResponderMove={handleResponderMove}
-          onResponderRelease={handleResponderRelease}
-          onResponderTerminate={handleResponderRelease}
+      <GestureDetector gesture={gesture}>
+        <Animated.View 
           style={[
-            styles.nodeContainer, 
-            isFocused && styles.focusedNode
+            styles.nodeContainer,
+            animatedStyle
           ]}
         >
           <Text style={styles.nodeTitle}>{node.title}</Text>
-        </View>
-      </Pressable>
+        </Animated.View>
+      </GestureDetector>
       
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
-          <Pressable style={styles.aboveArea} onPress={handlePressAbove} />
+          <GestureDetector gesture={Gesture.Tap().onStart(handlePressAbove)}>
+            <View style={styles.aboveArea} />
+          </GestureDetector>
           {node.children.map(child => (
             <NoteTree
               key={child.id}
@@ -143,6 +158,10 @@ function NoteTree({
               focusedNode={focusedNode}
               setFocusedNode={setFocusedNode}
               isRoot={false}
+              touchStartTime={touchStartTime}
+              setTouchStartTime={setTouchStartTime}
+              currentTouchNode={currentTouchNode}
+              setCurrentTouchNode={setCurrentTouchNode}
             />
           ))}
         </View>
@@ -174,9 +193,6 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderBottomColor: '#eee',
   },
-  focusedNode: {
-    backgroundColor: '#f0f0f0',
-  },
   nodeTitle: {
     fontSize: 16,
     color: '#000',
@@ -189,3 +205,5 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
 });
+
+export default NotesScreen;
