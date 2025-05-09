@@ -106,12 +106,22 @@ const NotesScreen = () => {
     console.log('Press ended');
   });
 
+  const ResponderConfig = {
+ onResponderMove: ()=>console.log(`moving in ${node.id}`),
+  onMoveShouldSetResponder:()=>{console.log(`onMoveShouldSEtin ${node.id}`); setFocusedNode(node);return true},
+   onResponderTerminationRequest: (e)=>true,
+    onResponderGrant: (e)=>console.log(`responder granted in node ${node.id}`)
+  }
+
+
+
   return (
     //superior for performance to pan responder (which is more liable to suffer locks on the thread)
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={Gesture.Pan()}>
         <View style={styles.container}>
           {rootNote && 
+ <View {...ResponderConfig}>
               <NoteTree 
                 node={rootNote} 
                 focusedNode={focusedNode}
@@ -123,6 +133,7 @@ const NotesScreen = () => {
                 setCurrentTouchNode={setCurrentTouchNode}
                 handleLayoutCallback={handleLayoutCallback}
               />
+              </View>
           }
         </View>
       </GestureDetector>
@@ -172,7 +183,7 @@ function NoteTree({
 
   return (
     <View>
-         <View onResponderMove={()=>console.log(`moving in ${node.id}`)} onMoveShouldSetResponder={()=>{console.log(`onMoveShouldSEtin ${node.id}`); setFocusedNode(node);return true}} onResponderTerminationRequest={(e)=>true} onResponderGrant={(e)=>console.log(`responder granted in node ${node.id}`)} onLayout={(e)=>handleLayoutCallback(node.id, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
+    <View onLayout={(e)=>handleLayoutCallback(node.id, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
