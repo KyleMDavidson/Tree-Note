@@ -172,7 +172,7 @@ function NoteTree({
 
   return (
     <View>
-         <View onResponderMove={()=>console.log('moving')} onStartShouldSetResponder={()=> {console.log('onStartShouldSetResponder');return true}} onMoveShouldSetResponder={(e)=>{console.log(`onMoveShouldSetResponder w event ${JSON.stringify(e)}`); return true;}} onResponderGrant={(e)=>console.log(`responder granted`)}><View onLayout={(e)=>handleLayoutCallback(node.id, e)} style={styles.nodeTitle}><Text>{node.title}</Text></View></View>
+         <View onResponderMove={()=>console.log(`moving in ${node.id}`)} onMoveShouldSetResponder={()=>{console.log(`onMoveShouldSEtin ${node.id}`); setFocusedNode(node);return true}} onResponderTerminationRequest={(e)=>true} onResponderGrant={(e)=>console.log(`responder granted in node ${node.id}`)} onLayout={(e)=>handleLayoutCallback(node.id, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
