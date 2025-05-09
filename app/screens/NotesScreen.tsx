@@ -50,9 +50,10 @@ const NotesScreen = () => {
   };
 
 
-  const handleLayoutCallback: (id: number, event: Event)=>void = useCallback(
+  const handleLayoutCallback: (id: number, event: Event)=> void = useCallback(
   (id, event) => {
     const { x, y, width, height } = event.nativeEvent.layout;
+    console.log(`updating comp bounds ${componentBounds.current[id]} ${[x,y,width,height]}`)
     componentBounds.current[id] = { x, y, width, height };
   },[])
 
@@ -149,6 +150,7 @@ function NoteTree({
   setCurrentTouchNode: (node: MarkedNode | null) => void;
   handleLayoutCallback: (id: number, event: Event) =>void;
 }) {
+  console.log(`Handlelaoutcab: ${handleLayoutCallback}`)
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
   const isBeingPressed = currentTouchNode?.id === node.id;
@@ -169,12 +171,13 @@ function NoteTree({
 
   return (
     <View>
-         <Pressable onPressIn={handlePress}><Text onLayout={handleLayoutCallback} style={styles.nodeTitle}>{node.title}</Text></Pressable>
+         <Pressable onPressIn={handlePress}><Text onLayout={(e)=>handleLayoutCallback(node.id, e)} style={styles.nodeTitle}>{node.title}</Text></Pressable>
       
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
             <NoteTree
+            handleLayoutCallback={handleLayoutCallback}
               key={child.id}
               node={child}
               focusedNode={focusedNode}
