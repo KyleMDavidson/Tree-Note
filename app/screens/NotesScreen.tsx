@@ -1,4 +1,4 @@
-import { useCallback, useRef, useState } from 'react';
+import { SyntheticEvent, useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -47,13 +47,14 @@ const NotesScreen = () => {
     markPathToFocused(newRoot, node);
     setRootNode(newRoot);
     setFocusedNode(node);
+    componentBounds.current = {}
   };
 
 
-  const handleLayoutCallback: (id: number, event: Event)=> void = useCallback(
+  const handleLayoutCallback: (id: number, event: SyntheticEvent)=> void = useCallback(
   (id, event) => {
     const { x, y, width, height } = event.nativeEvent.layout;
-    console.log(`updating comp bounds ${componentBounds.current[id]} ${[x,y,width,height]}`)
+    console.log(`updating comp bounds ${JSON.stringify(componentBounds.current)} ${[x,y,width,height]}`)
     componentBounds.current[id] = { x, y, width, height };
   },[])
 
@@ -150,7 +151,7 @@ function NoteTree({
   setCurrentTouchNode: (node: MarkedNode | null) => void;
   handleLayoutCallback: (id: number, event: Event) =>void;
 }) {
-  console.log(`Handlelaoutcab: ${handleLayoutCallback}`)
+  console.log(`handleLayoutCallback: ${handleLayoutCallback} in node ${node.id}`)
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
   const isBeingPressed = currentTouchNode?.id === node.id;
