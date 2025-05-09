@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { TestRoot } from '../../src/models/fixtures';
@@ -94,6 +94,7 @@ function NoteTree({
   const isBeingPressed = currentTouchNode?.id === node.id;
 
   const handlePress = () => {
+    console.log('handlepress')
     setFocusedNode(node);
   };
 
@@ -108,7 +109,7 @@ function NoteTree({
 
   return (
     <View>
-         <Text onPress={handlePress} style={styles.nodeTitle}>{node.title}</Text>
+         <Pressable onPressIn={handlePress}><Text style={styles.nodeTitle}>{node.title}</Text></Pressable>
       
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
