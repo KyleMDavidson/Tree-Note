@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -12,9 +12,11 @@ type MarkedNode = Node & {
 
 const NotesScreen = () => {
   const [rootNote, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
-  const [focusedNode, setFocusedNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+  const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(TestRoot as MarkedNode);
+  const pressedNodeId = useRef<Number>(null)
   const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
   const [currentTouchNode, setCurrentTouchNode] = useState<MarkedNode | null>(null);
+  const componentBounds = useRef({})
 
   const handleSetFocusedNode = (node: MarkedNode) => {
     // Create a new copy of the root note to trigger a re-render
@@ -47,6 +49,61 @@ const NotesScreen = () => {
     setFocusedNode(node);
   };
 
+
+  const handleLayoutCallback: (id: number, event: Event)=>void = useCallback(
+  (id, event) => {
+    const { x, y, width, height } = event.nativeEvent.layout;
+    componentBounds.current[id] = { x, y, width, height };
+  },[])
+
+
+  function findTouchedNode(event){
+    // Find which component is under the touch
+    const { x, y } = event;
+    for (const [id, bounds] of Object.entries(pressedNodeId.current)) {
+      if (
+        x >= bounds.x &&
+        x <= bounds.x + bounds.width &&
+        y >= bounds.y &&
+        y <= bounds.y + bounds.height
+      ) {
+        setFocusedNode({id: parseInt(id)});
+        console.log(`Press started on component: ${id}`);
+        break;
+      }
+    }
+  }
+
+
+  const pan = Gesture.Pan()
+  .onBegin((event) =>findTouchedNode(event))
+  .onUpdate((event) => {
+    // Update pressed component based on touch position
+    const { x, y } = event;
+    let newPressedId = null;
+    for (const [id, bounds] of Object.entries(componentBounds.current)) {
+      if (
+        x >= bounds.x &&
+        x <= bounds.x + bounds.width &&
+        y >= bounds.y &&
+        y <= bounds.y + bounds.height
+      ) {
+        newPressedId = id;
+        break;
+      }
+    }
+    if (newPressedId !== pressedNodeId.current) {
+      pressedNodeId.current = newPressedId;
+      console.log(`Press moved to component: ${newPressedId || 'None'}`);
+      pressedNodeId.current = newPressedId
+      setFocusedNode(newPressedId);
+    }
+  })
+  .onFinalize(() => {
+    pressedNodeId.current = null;
+    console.log('Press ended');
+  });
+
   return (
     //superior for performance to pan responder (which is more liable to suffer locks on the thread)
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -62,6 +119,7 @@ const NotesScreen = () => {
                 setTouchStartTime={setTouchStartTime}
                 currentTouchNode={currentTouchNode}
                 setCurrentTouchNode={setCurrentTouchNode}
+                handleLayoutCallback={handleLayoutCallback}
               />
           }
         </View>
@@ -78,16 +136,18 @@ function NoteTree({
   touchStartTime,
   setTouchStartTime,
   currentTouchNode,
-  setCurrentTouchNode
+  setCurrentTouchNode,
+  handleLayoutCallback
 }: { 
   node: MarkedNode;
-  focusedNode: MarkedNode | null;
+  focusedNode: Partial<MarkedNode> | null;
   setFocusedNode: (node: MarkedNode) => void;
   isRoot?: boolean;
   touchStartTime: number | null;
   setTouchStartTime: (time: number | null) => void;
   currentTouchNode: MarkedNode | null;
   setCurrentTouchNode: (node: MarkedNode | null) => void;
+  handleLayoutCallback: (id: number, event: Event) =>void;
 }) {
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
@@ -109,7 +169,7 @@ function NoteTree({
 
   return (
     <View>
-         <Pressable onPressIn={handlePress}><Text style={styles.nodeTitle}>{node.title}</Text></Pressable>
+         <Pressable onPressIn={handlePress}><Text onLayout={handleLayoutCallback} style={styles.nodeTitle}>{node.title}</Text></Pressable>
       
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
