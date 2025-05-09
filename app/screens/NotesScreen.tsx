@@ -1,5 +1,5 @@
 import { SyntheticEvent, useCallback, useRef, useState } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { TestRoot } from '../../src/models/fixtures';
@@ -172,8 +172,7 @@ function NoteTree({
 
   return (
     <View>
-         <Pressable onPressIn={handlePress}><Text onLayout={(e)=>handleLayoutCallback(node.id, e)} style={styles.nodeTitle}>{node.title}</Text></Pressable>
-      
+         <View onResponderMove={()=>console.log('moving')} onStartShouldSetResponder={()=> {console.log('onStartShouldSetResponder');return true}} onMoveShouldSetResponder={(e)=>{console.log(`onMoveShouldSetResponder w event ${JSON.stringify(e)}`); return true;}} onResponderGrant={(e)=>console.log(`responder granted`)}><View onLayout={(e)=>handleLayoutCallback(node.id, e)} style={styles.nodeTitle}><Text>{node.title}</Text></View></View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
