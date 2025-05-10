@@ -33,32 +33,46 @@ const NotesScreen = () => {
     return null;
   }, [componentBounds])
 
-  //DEPRECATED
-  //still too high level but this is still a better way to write it.
-  // const pan = Gesture.Pan()
-  // .onBegin((event) =>findTouchedNode(event.x, event.y))
-  // .onUpdate((event) => {
-  //   // Update pressed component based on touch position
-  //   const { x, y } = event;
-  //   let newPressedId = null;
-  //   findTouchedNode(x,y)
-   
-  //   if (newPressedId !== pressedNodeId.current) {
-  //     pressedNodeId.current = newPressedId;
-  //     console.log(`Press moved to component: ${newPressedId || 'None'}`);
-  //     pressedNodeId.current = newPressedId
-  //     setFocusedNode(newPressedId);
-  //   }
-  // })
-  // .onFinalize(() => {
-  //   pressedNodeId.current = null;
-  //   console.log('Press ended');
-  // });
+
+  const handleSetFocusedNode = (node: MarkedNode) => {
+    // clear all path markings
+
+    const clearPathMarkings = (n: MarkedNode) => {
+      n.isOnPathToFocused = false;
+
+      n.children.forEach(clearPathMarkings);
+    };
+
+    if (rootNote) clearPathMarkings(rootNote);
+
+    // mark the path to the new focused node
+    const markPathToFocused = (n: MarkedNode, target: MarkedNode): boolean => {
+      if (n.id === target.id) {
+        n.isOnPathToFocused = true;
+
+        return true;
+      }
+
+      for (const child of n.children) {
+        if (markPathToFocused(child, target)) {
+          n.isOnPathToFocused = true;
+
+          return true;
+        }
+      }
+
+      return false;
+    };
+
+    if (rootNote) markPathToFocused(rootNote, node);
+    setFocusedNode(node);
+  };
 
 
   const handleLayoutCallback = useCallback((note_id, event)=>{
-    componentBounds.current[note_id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.width, height: event.nativeEvent.height}
+    componentBounds.current[note_id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height}
   }, [])
+
 
   //ok so, we really don't need this. we can grab locations in layout, and then just check position here.
   const ResponderConfig = {
