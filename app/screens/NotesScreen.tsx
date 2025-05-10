@@ -78,7 +78,7 @@ const NotesScreen = () => {
 
   //ok so, we really don't need this. we can grab locations in layout, and then just check position here.
   const ResponderConfig = {
- onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)}`);node ? handleSetFocusedNode(node): null},
+ onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
 
  //this fires it way up.
  //onResponderMove: (e)=>{console.log(`moving in ${e.nativeEvent.locationX}`);console.log(`componentbounds: ${JSON.stringify(componentBounds.current)}`);console.log(findTouchedNode(e.nativeEvent.locationX, e.nativeEvent.locationY))
