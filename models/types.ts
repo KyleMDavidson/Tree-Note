@@ -26,6 +26,6 @@ type HoverState = {
     hoveredNodeId: number | null;
 }
 
-export type { ComponentBounds, HoverState, Leaf, Node, TouchState };
+export type { ComponentBounds, HoverState, Leaf, NID, Node, TouchState };
 
 

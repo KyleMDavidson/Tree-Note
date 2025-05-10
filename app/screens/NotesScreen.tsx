@@ -1,9 +1,10 @@
-import { SyntheticEvent, useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { TestRoot } from '../../src/models/fixtures';
 import { Node } from '../../src/models/types';
+import { ComponentBounds, NID } from '@/models/types';
 
 // Add a new type that includes the path marking
 type MarkedNode = Node & {
@@ -18,72 +19,9 @@ const NotesScreen = () => {
   const [currentTouchNode, setCurrentTouchNode] = useState<MarkedNode | null>(null);
   const componentBounds = useRef({})
 
-  const handleSetFocusedNode = (node: MarkedNode) => {
-    // Create a new copy of the root note to trigger a re-render
-    const newRoot = { ...rootNote! };
-    
-    // First, clear all path markings
-    const clearPathMarkings = (n: MarkedNode) => {
-      n.isOnPathToFocused = false;
-      n.children.forEach(clearPathMarkings);
-    };
-    clearPathMarkings(newRoot);
 
-    // Then mark the path to the new focused node
-    const markPathToFocused = (n: MarkedNode, target: MarkedNode): boolean => {
-      if (n.id === target.id) {
-        n.isOnPathToFocused = true;
-        return true;
-      }
-      for (const child of n.children) {
-        if (markPathToFocused(child, target)) {
-          n.isOnPathToFocused = true;
-          return true;
-        }
-      }
-      return false;
-    };
-
-    markPathToFocused(newRoot, node);
-    setRootNode(newRoot);
-    setFocusedNode(node);
-  };
-
-  useEffect(()=>{console.log(`updated component bounnds: ${JSON.stringify(componentBounds)}`)},[componentBounds])
-
-
-  const handleLayoutCallback: (id: number, event: SyntheticEvent)=> void = useCallback(
-  (id, event) => {
-    const { x, y, width, height } = event.nativeEvent.layout;
-    console.log(`updating comp bounds ${JSON.stringify(componentBounds.current)} ${[x,y,width,height]}`)
-    componentBounds.current[id] = { x, y, width, height };
-  },[])
-
-
-  function findTouchedNode(event){
-    // Find which component is under the touch
+  const findTouchedNode = useCallback((x, y): (string | null){
     const { x, y } = event;
-    for (const [id, bounds] of Object.entries(pressedNodeId.current)) {
-      if (
-        x >= bounds.x &&
-        x <= bounds.x + bounds.width &&
-        y >= bounds.y &&
-        y <= bounds.y + bounds.height
-      ) {
-        setFocusedNode({id: parseInt(id)});
-        console.log(`Press started on component: ${id}`);
-        break;
-      }
-    }
-  }
-
-
-  const pan = Gesture.Pan()
-  .onBegin((event) =>findTouchedNode(event))
-  .onUpdate((event) => {
-    // Update pressed component based on touch position
-    const { x, y } = event;
-    let newPressedId = null;
     for (const [id, bounds] of Object.entries(componentBounds.current)) {
       if (
         x >= bounds.x &&
@@ -91,10 +29,22 @@ const NotesScreen = () => {
         y >= bounds.y &&
         y <= bounds.y + bounds.height
       ) {
-        newPressedId = id;
-        break;
+        return id;
       }
     }
+    return null;
+  }, [componentBounds])
+
+
+  //still too high level but this is still a better way to write it.
+  const pan = Gesture.Pan()
+  .onBegin((event) =>findTouchedNode(event.x, event.y))
+  .onUpdate((event) => {
+    // Update pressed component based on touch position
+    const { x, y } = event;
+    let newPressedId = null;
+    findTouchedNode(x,y)
+   
     if (newPressedId !== pressedNodeId.current) {
       pressedNodeId.current = newPressedId;
       console.log(`Press moved to component: ${newPressedId || 'None'}`);
@@ -144,13 +94,8 @@ const NotesScreen = () => {
   );
 }
 
-function findNode(componentBounds: ComponentBounds[], x, y){
 
-}
 
-function maybeUpdateFocusedNode(){
-
-}
 
 function NoteTree({ 
   node, 
