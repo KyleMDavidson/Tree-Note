@@ -28,6 +28,4 @@ type HoverState = {
 
 export type { ComponentBounds, HoverState, Leaf, Node, TouchState };
 
-// Add default export to satisfy Expo Router
-export default {};
 
