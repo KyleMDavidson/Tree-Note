@@ -37,25 +37,25 @@ const NotesScreen = () => {
 
 
   //still too high level but this is still a better way to write it.
-  const pan = Gesture.Pan()
-  .onBegin((event) =>findTouchedNode(event.x, event.y))
-  .onUpdate((event) => {
-    // Update pressed component based on touch position
-    const { x, y } = event;
-    let newPressedId = null;
-    findTouchedNode(x,y)
+  // const pan = Gesture.Pan()
+  // .onBegin((event) =>findTouchedNode(event.x, event.y))
+  // .onUpdate((event) => {
+  //   // Update pressed component based on touch position
+  //   const { x, y } = event;
+  //   let newPressedId = null;
+  //   findTouchedNode(x,y)
    
-    if (newPressedId !== pressedNodeId.current) {
-      pressedNodeId.current = newPressedId;
-      console.log(`Press moved to component: ${newPressedId || 'None'}`);
-      pressedNodeId.current = newPressedId
-      setFocusedNode(newPressedId);
-    }
-  })
-  .onFinalize(() => {
-    pressedNodeId.current = null;
-    console.log('Press ended');
-  });
+  //   if (newPressedId !== pressedNodeId.current) {
+  //     pressedNodeId.current = newPressedId;
+  //     console.log(`Press moved to component: ${newPressedId || 'None'}`);
+  //     pressedNodeId.current = newPressedId
+  //     setFocusedNode(newPressedId);
+  //   }
+  // })
+  // .onFinalize(() => {
+  //   pressedNodeId.current = null;
+  //   console.log('Press ended');
+  // });
 
   //ok so, we really don't need this. we can grab locations in layout, and then just check position here.
   const ResponderConfig = {
