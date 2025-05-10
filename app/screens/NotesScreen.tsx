@@ -4,7 +4,6 @@ import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-g
 
 import { TestRoot } from '../../src/models/fixtures';
 import { Node } from '../../src/models/types';
-import { ComponentBounds, NID } from '@/models/types';
 
 // Add a new type that includes the path marking
 type MarkedNode = Node & {
@@ -20,8 +19,7 @@ const NotesScreen = () => {
   const componentBounds = useRef({})
 
 
-  const findTouchedNode = useCallback((x, y): (string | null){
-    const { x, y } = event;
+  const findTouchedNode = useCallback((x, y):(string | null) =>{
     for (const [id, bounds] of Object.entries(componentBounds.current)) {
       if (
         x >= bounds.x &&
@@ -35,7 +33,7 @@ const NotesScreen = () => {
     return null;
   }, [componentBounds])
 
-
+  //DEPRECATED
   //still too high level but this is still a better way to write it.
   // const pan = Gesture.Pan()
   // .onBegin((event) =>findTouchedNode(event.x, event.y))
@@ -57,6 +55,11 @@ const NotesScreen = () => {
   //   console.log('Press ended');
   // });
 
+
+  const handleLayoutCallback = useCallback((note_id, event)=>{
+    componentBounds.current[note_id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.width, height: event.nativeEvent.height}
+  }, [])
+
   //ok so, we really don't need this. we can grab locations in layout, and then just check position here.
   const ResponderConfig = {
  onResponderMove: (e)=>{console.log(`moving in ${e.nativeEvent.locationX}`);console.log(`componentbounds: ${JSON.stringify(componentBounds.current)}`);
@@ -66,7 +69,7 @@ const NotesScreen = () => {
     onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`)
   }
 
-
+  //we'll pass this to our react native view's on layout.
 
   return (
     //superior for performance to pan responder (which is more liable to suffer locks on the thread)
@@ -78,7 +81,6 @@ const NotesScreen = () => {
               <NoteTree 
                 node={rootNote} 
                 focusedNode={focusedNode}
-                setFocusedNode={handleSetFocusedNode}
                 isRoot={true}
                 touchStartTime={touchStartTime}
                 setTouchStartTime={setTouchStartTime}
