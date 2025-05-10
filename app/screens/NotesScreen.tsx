@@ -1,4 +1,4 @@
-import { SyntheticEvent, useCallback, useRef, useState } from 'react';
+import { SyntheticEvent, useCallback, useEffect, useRef, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
@@ -47,8 +47,9 @@ const NotesScreen = () => {
     markPathToFocused(newRoot, node);
     setRootNode(newRoot);
     setFocusedNode(node);
-    componentBounds.current = {}
   };
+
+  useEffect(()=>{console.log(`updated component bounnds: ${JSON.stringify(componentBounds)}`)},[componentBounds])
 
 
   const handleLayoutCallback: (id: number, event: SyntheticEvent)=> void = useCallback(
@@ -106,11 +107,13 @@ const NotesScreen = () => {
     console.log('Press ended');
   });
 
+  //ok so, we really don't need this. we can grab locations in layout, and then just check position here.
   const ResponderConfig = {
- onResponderMove: ()=>console.log(`moving in ${node.id}`),
-  onMoveShouldSetResponder:()=>{console.log(`onMoveShouldSEtin ${node.id}`); setFocusedNode(node);return true},
+ onResponderMove: (e)=>{console.log(`moving in ${e.nativeEvent.locationX}`);console.log(`componentbounds: ${JSON.stringify(componentBounds.current)}`);
+},
+  onMoveShouldSetResponder:(e)=>true,
    onResponderTerminationRequest: (e)=>true,
-    onResponderGrant: (e)=>console.log(`responder granted in node ${node.id}`)
+    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`)
   }
 
 
@@ -141,6 +144,14 @@ const NotesScreen = () => {
   );
 }
 
+function findNode(componentBounds: ComponentBounds[], x, y){
+
+}
+
+function maybeUpdateFocusedNode(){
+
+}
+
 function NoteTree({ 
   node, 
   focusedNode, 
@@ -162,7 +173,6 @@ function NoteTree({
   setCurrentTouchNode: (node: MarkedNode | null) => void;
   handleLayoutCallback: (id: number, event: Event) =>void;
 }) {
-  console.log(`handleLayoutCallback: ${handleLayoutCallback} in node ${node.id}`)
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
   const isBeingPressed = currentTouchNode?.id === node.id;

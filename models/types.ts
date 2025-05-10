@@ -7,6 +7,11 @@ type Node = {
     children: Node[]
 }
 
+type ComponentBounds = {
+    x: number;
+    y: number;
+}
+
 type TouchState = {
     startX: number;
     startY: number;
@@ -21,7 +26,7 @@ type HoverState = {
     hoveredNodeId: number | null;
 }
 
-export type { HoverState, Leaf, Node, TouchState };
+export type { ComponentBounds, HoverState, Leaf, Node, TouchState };
 
 // Add default export to satisfy Expo Router
 export default {};
