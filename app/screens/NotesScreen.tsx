@@ -3,12 +3,14 @@ import { StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { TestRoot } from '../../src/models/fixtures';
-import { Node } from '../../src/models/types';
+import { Node, NodeTouchableBounds } from '../../src/models/types';
+
 
 // Add a new type that includes the path marking
 type MarkedNode = Node & {
   isOnPathToFocused?: boolean;
 };
+
 
 const NotesScreen = () => {
   const [rootNote, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
@@ -16,7 +18,7 @@ const NotesScreen = () => {
   const pressedNodeId = useRef<Number>(null)
   const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
   const [currentTouchNode, setCurrentTouchNode] = useState<MarkedNode | null>(null);
-  const componentBounds = useRef({})
+  const componentBounds = useRef<NodeTouchableBounds>({})
 
 
   const findTouchedNode = useCallback((x, y):(string | null) =>{
