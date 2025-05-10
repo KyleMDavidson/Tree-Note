@@ -21,15 +21,15 @@ const NotesScreen = () => {
   const componentBounds = useRef<NodeTouchableBounds>({})
 
 
-  const findTouchedNode = useCallback((x, y):(string | null) =>{
-    for (const [id, bounds] of Object.entries(componentBounds.current)) {
+  const findTouchedNode = useCallback((x, y):(Node | null) =>{
+    for (const [id, node] of Object.entries(componentBounds.current)) {
       if (
-        x >= bounds.x &&
-        x <= bounds.x + bounds.width &&
-        y >= bounds.y &&
-        y <= bounds.y + bounds.height
+        x >= node.x &&
+        x <= node.x + node.width &&
+        y >= node.y &&
+        y <= node.y + node.height
       ) {
-        return id;
+        return {id: parseInt(id), ...node};
       }
     }
     return null;
@@ -71,19 +71,22 @@ const NotesScreen = () => {
   };
 
 
-  const handleLayoutCallback = useCallback((note_id, event)=>{
-    componentBounds.current[note_id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height}
+  const handleLayoutCallback = useCallback((node, event)=>{
+    componentBounds.current[node.id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height, node: node}
   }, [])
 
 
   //ok so, we really don't need this. we can grab locations in layout, and then just check position here.
   const ResponderConfig = {
- onResponderMove: (e)=>{console.log(`moving in ${e.nativeEvent.locationX}`);console.log(`componentbounds: ${JSON.stringify(componentBounds.current)}`);
-},
+ onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)}`);node ? setFocusedNode(node): null},
+
+ //this fires it way up.
+ //onResponderMove: (e)=>{console.log(`moving in ${e.nativeEvent.locationX}`);console.log(`componentbounds: ${JSON.stringify(componentBounds.current)}`);console.log(findTouchedNode(e.nativeEvent.locationX, e.nativeEvent.locationY))
   onMoveShouldSetResponder:(e)=>true,
    onResponderTerminationRequest: (e)=>true,
     onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`)
   }
+
 
   //we'll pass this to our react native view's on layout.
 
@@ -156,7 +159,7 @@ function NoteTree({
 
   return (
     <View>
-    <View onLayout={(e)=>handleLayoutCallback(node.id, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
+    <View onLayout={(e)=>handleLayoutCallback(node, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
