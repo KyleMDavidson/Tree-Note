@@ -57,8 +57,8 @@ const NotesScreen = () => {
   };
 
 
-  const handleLayoutCallback = useCallback((node, event)=>{
-    componentBounds.current[node.id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height, node: node}
+  const handleLayoutCallback = useCallback((id, event)=>{
+    componentBounds.current[id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height}
   }, [])
 
 
