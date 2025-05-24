@@ -21,9 +21,15 @@ export const TestRoot: Node = {
                 children: [
                     {
                         id: 5,
-                        children: [],
+                        children: [{
+                            id: 6,
+                            children: [{id: 7, children: [], title: "node 7 depth 4", content: "this is a leaf"}],
+                            title: "node 6 depth 3",
+                            content: "this is an internal node"
+
+                        }],
                         title: 'node 5 depth: 3',
-                        content: 'this is a leaf',
+                        content: 'this is an internal node',
                     }
                 ],
                 title: 'node 4 depth: 2',

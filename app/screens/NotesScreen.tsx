@@ -64,10 +64,10 @@ const NotesScreen = () => {
   },[])
 
   const ResponderConfig = {
- onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)} for location ${e.nativeEvent.locationX}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
+ onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`onResponderMove - found node: ${JSON.stringify(node)} for location ${e.nativeEvent.locationX} ${e.nativeEvent.locationY}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
-   onResponderTerminationRequest: (e)=>true,
-    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
+  //  onResponderTerminationRequest: (e)=>true,
+    // onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   }
 
 
@@ -110,11 +110,12 @@ function findTouchedNode(componentBounds, x, y){
   console.log(`touched x, y: ${x} ${y}`)
   for (const [id, node] of Object.entries(componentBounds.current)) {
     if (
-      x >= node.x &&
-      x <= node.x + node.width &&
-      y >= node.y &&
-      y <= node.y + node.height
+      x > node.x &&
+      x < node.x + node.width &&
+      y > node.y &&
+      y < node.y + node.height
     ) {
+      console.log(`found node ${id} w bounds ${node.x} ${node.y}`)
       return { id: parseInt(id), ...node };
     }
   }
