@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { Button, LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { TestRoot } from '../../src/models/fixtures';
@@ -141,7 +141,7 @@ function NoteTree({
   setTouchStartTime: (time: number | null) => void;
   currentTouchNode: MarkedNode | null;
   setCurrentTouchNode: (node: MarkedNode | null) => void;
-  handleLayoutCallback: (id: number, event: Event) =>void;
+  handleLayoutCallback: (id: number, event: LayoutChangeEvent) =>void;
 }) {
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
@@ -163,7 +163,7 @@ function NoteTree({
 
   return (
     <View>
-    <View onLayout={(e)=>handleLayoutCallback(node, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
+    <View onLayout={(e)=>handleLayoutCallback(node.id, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
