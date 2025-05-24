@@ -1,5 +1,5 @@
-import { useCallback, useRef, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { TestRoot } from '../../src/models/fixtures';
@@ -12,8 +12,9 @@ type MarkedNode = Node & {
 };
 
 
+
 const NotesScreen = () => {
-  const [rootNote, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
+  const [rootNode, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(TestRoot as MarkedNode);
   const pressedNodeId = useRef<Number>(null)
   const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
@@ -21,31 +22,16 @@ const NotesScreen = () => {
   const componentBounds = useRef<NodeTouchableBounds>({})
 
 
-  const findTouchedNode = useCallback((x, y):(Node | null) =>{
-    for (const [id, node] of Object.entries(componentBounds.current)) {
-      if (
-        x >= node.x &&
-        x <= node.x + node.width &&
-        y >= node.y &&
-        y <= node.y + node.height
-      ) {
-        return {id: parseInt(id), ...node};
-      }
-    }
-    return null;
-  }, [componentBounds])
+  useEffect(()=>{
+    console.log(`component bounds changed`);
+    console.log(componentBounds.current)
 
+  }, [componentBounds])
 
   const handleSetFocusedNode = (node: MarkedNode) => {
     // clear all path markings
 
-    const clearPathMarkings = (n: MarkedNode) => {
-      n.isOnPathToFocused = false;
-
-      n.children.forEach(clearPathMarkings);
-    };
-
-    if (rootNote) clearPathMarkings(rootNote);
+    if (rootNode) clearPathMarkings(rootNode);
 
     // mark the path to the new focused node
     const markPathToFocused = (n: MarkedNode, target: MarkedNode): boolean => {
@@ -66,7 +52,7 @@ const NotesScreen = () => {
       return false;
     };
 
-    if (rootNote) markPathToFocused(rootNote, node);
+    if (rootNode) markPathToFocused(rootNode, node);
     setFocusedNode(node);
   };
 
@@ -76,29 +62,24 @@ const NotesScreen = () => {
   }, [])
 
 
-  //ok so, we really don't need this. we can grab locations in layout, and then just check position here.
   const ResponderConfig = {
- onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
-
- //this fires it way up.
- //onResponderMove: (e)=>{console.log(`moving in ${e.nativeEvent.locationX}`);console.log(`componentbounds: ${JSON.stringify(componentBounds.current)}`);console.log(findTouchedNode(e.nativeEvent.locationX, e.nativeEvent.locationY))
+ onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
    onResponderTerminationRequest: (e)=>true,
-    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`)
+    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   }
 
 
-  //we'll pass this to our react native view's on layout.
-
   return (
     //superior for performance to pan responder (which is more liable to suffer locks on the thread)
+    <View style={{flex: 1}}>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={Gesture.Pan()}>
         <View style={styles.container}>
-          {rootNote && 
+          {rootNode && 
  <View {...ResponderConfig}>
               <NoteTree 
-                node={rootNote} 
+                node={rootNode} 
                 focusedNode={focusedNode}
                 isRoot={true}
                 touchStartTime={touchStartTime}
@@ -112,9 +93,32 @@ const NotesScreen = () => {
         </View>
       </GestureDetector>
     </GestureHandlerRootView>
+    <Button title={"collapse"} onPress={()=>{if (rootNode){clearPathMarkings(rootNode); setRootNode(rootNode); setFocusedNode(null)}}}/>
+      </View>
   );
 }
 
+function clearPathMarkings(n: MarkedNode){
+  console.log('clearing path.')
+  console.log(`node: ${n}`)
+  n.isOnPathToFocused = false
+
+  n.children.forEach(clearPathMarkings);
+};
+
+function findTouchedNode(componentBounds, x, y){
+  for (const [id, node] of Object.entries(componentBounds.current)) {
+    if (
+      x >= node.x &&
+      x <= node.x + node.width &&
+      y >= node.y &&
+      y <= node.y + node.height
+    ) {
+      return { id: parseInt(id), ...node };
+    }
+  }
+  return null;
+};
 
 
 
