@@ -76,7 +76,7 @@ const NotesScreen = () => {
     <View style={{flex: 1}}>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={Gesture.Pan()}>
-        <View style={styles.container}>
+        <View>
           {rootNode && 
  <View {...ResponderConfig}>
               <NoteTree 
@@ -167,8 +167,10 @@ function NoteTree({
 
     return (
     <View>
-    <View ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>
-        <Text style={styles.nodeTitle}>{node.title}</Text></View>
+ <View style={styles.nodeContainer}> 
+    <Text style={styles.nodeTitle} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
+        {/* <Text style={styles.nodeTitle}>{node.title}</Text></View> */}
+        </View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
@@ -212,13 +214,16 @@ const styles = StyleSheet.create({
     backgroundColor: '#fff',
   },
   nodeContainer: {
-    padding: 16,
-    borderBottomWidth: 1,
-    borderBottomColor: '#eee',
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "flex-start"
   },
   nodeTitle: {
     fontSize: 20,
-    color: '#000',
+    color: "dark grey",
+    alignSelf: "flex-start",
+    borderColor: "blue",
+    borderWidth: 3
   },
   childrenContainer: {
     marginLeft: 20,

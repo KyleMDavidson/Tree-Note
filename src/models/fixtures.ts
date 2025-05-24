@@ -8,7 +8,9 @@ export const TestRoot: Node = {
                 children: [
                     {
                         id: 3,
-                        children: [],
+                        children: [
+                            {id: 7, children: [], title: "node 7 depth 4", content: "this is a leaf"}
+                        ],
                         title: 'node 3 depth: 3',
                         content: 'this is a leaf',
                     }
