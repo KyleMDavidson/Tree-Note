@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { Button, LayoutChangeEvent, StyleSheet, Text, View } from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import { TestRoot } from '../../src/models/fixtures';
@@ -56,14 +56,15 @@ const NotesScreen = () => {
     setFocusedNode(node);
   };
 
-
-  const handleLayoutCallback = useCallback((id, event)=>{
-    componentBounds.current[id] ={ x: event.nativeEvent.layout.x,  y: event.nativeEvent.layout.y, width: event.nativeEvent.layout.width, height: event.nativeEvent.layout.height}
-  }, [])
-
+  const registerDimensions = useCallback((id, x,y,width,height )=>{componentBounds.current[id]={x:x,y:y,width:width,height:height}},[])
+  const handleLayout= useCallback((id: number, touchTargetRef: any) => {
+    if (touchTargetRef.current) {
+      touchTargetRef.current.measureInWindow((x, y, width, height) => registerDimensions(id, x,y,width,height));
+      };
+  },[])
 
   const ResponderConfig = {
- onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
+ onResponderMove: (e)=>{console.log('responder move.');const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`found node: ${JSON.stringify(node)} for location ${e.nativeEvent.locationX}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
    onResponderTerminationRequest: (e)=>true,
     onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
@@ -86,7 +87,7 @@ const NotesScreen = () => {
                 setTouchStartTime={setTouchStartTime}
                 currentTouchNode={currentTouchNode}
                 setCurrentTouchNode={setCurrentTouchNode}
-                handleLayoutCallback={handleLayoutCallback}
+                handleLayout={handleLayout}
               />
               </View>
           }
@@ -99,14 +100,14 @@ const NotesScreen = () => {
 }
 
 function clearPathMarkings(n: MarkedNode){
-  console.log('clearing path.')
-  console.log(`node: ${n}`)
   n.isOnPathToFocused = false
 
   n.children.forEach(clearPathMarkings);
 };
 
 function findTouchedNode(componentBounds, x, y){
+  console.log(`componetn bounds ref: ${JSON.stringify(componentBounds.current)}`)
+  console.log(`touched x, y: ${x} ${y}`)
   for (const [id, node] of Object.entries(componentBounds.current)) {
     if (
       x >= node.x &&
@@ -131,7 +132,7 @@ function NoteTree({
   setTouchStartTime,
   currentTouchNode,
   setCurrentTouchNode,
-  handleLayoutCallback
+  handleLayout
 }: { 
   node: MarkedNode;
   focusedNode: Partial<MarkedNode> | null;
@@ -141,11 +142,12 @@ function NoteTree({
   setTouchStartTime: (time: number | null) => void;
   currentTouchNode: MarkedNode | null;
   setCurrentTouchNode: (node: MarkedNode | null) => void;
-  handleLayoutCallback: (id: number, event: LayoutChangeEvent) =>void;
+  handleLayout: (id: number, touchTarget: any) =>void;
 }) {
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
   const isBeingPressed = currentTouchNode?.id === node.id;
+  const touchTargetBoundsRef = useRef(null)
 
   const handlePress = () => {
     console.log('handlepress')
@@ -161,14 +163,16 @@ function NoteTree({
     }
   }
 
-  return (
+
+    return (
     <View>
-    <View onLayout={(e)=>handleLayoutCallback(node.id, e)}><Text style={styles.nodeTitle}>{node.title}</Text></View>
+    <View ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>
+        <Text style={styles.nodeTitle}>{node.title}</Text></View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
           {node.children.map(child => (
             <NoteTree
-            handleLayoutCallback={handleLayoutCallback}
+            handleLayout={handleLayout}
               key={child.id}
               node={child}
               focusedNode={focusedNode}
@@ -185,6 +189,7 @@ function NoteTree({
     </View>
   );
 }
+
 
 
 // Helper function to find the parent of a node
