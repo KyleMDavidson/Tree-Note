@@ -216,12 +216,13 @@ const styles = StyleSheet.create({
   nodeContainer: {
     display: "flex",
     flexDirection: "row",
-    alignItems: "flex-start"
+    alignItems: "flex-start",
   },
   nodeTitle: {
     fontSize: 20,
     color: "dark grey",
     alignSelf: "flex-start",
+    margin: 5,
     borderColor: "blue",
     borderWidth: 3
   },
