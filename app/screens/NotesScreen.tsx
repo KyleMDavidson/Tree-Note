@@ -63,6 +63,11 @@ const NotesScreen = () => {
       };
   },[])
 
+  const handleRemoval=useCallback((id: number)=>{
+    // delete componentBounds.current[`${id}`];
+    console.log('hadnling removal!');
+  }, [])
+
   const ResponderConfig = {
  onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`onResponderMove - found node: ${JSON.stringify(node)} for location ${e.nativeEvent.locationX} ${e.nativeEvent.locationY}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
@@ -88,6 +93,7 @@ const NotesScreen = () => {
                 currentTouchNode={currentTouchNode}
                 setCurrentTouchNode={setCurrentTouchNode}
                 handleLayout={handleLayout}
+                handleRemoval={handleRemoval}
               />
               </View>
           }
@@ -133,7 +139,8 @@ function NoteTree({
   setTouchStartTime,
   currentTouchNode,
   setCurrentTouchNode,
-  handleLayout
+  handleLayout,
+  handleRemoval
 }: { 
   node: MarkedNode;
   focusedNode: Partial<MarkedNode> | null;
@@ -144,6 +151,7 @@ function NoteTree({
   currentTouchNode: MarkedNode | null;
   setCurrentTouchNode: (node: MarkedNode | null) => void;
   handleLayout: (id: number, touchTarget: any) =>void;
+  handleRemoval: (id: number)=>void
 }) {
   const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
@@ -151,7 +159,6 @@ function NoteTree({
   const touchTargetBoundsRef = useRef(null)
 
   const handlePress = () => {
-    console.log('handlepress')
     setFocusedNode(node);
   };
 
@@ -163,6 +170,11 @@ function NoteTree({
       }
     }
   }
+
+  useEffect(()=>{
+    // return ()=>handleRemoval(node.id)
+    return ()=>console.log('fuck')
+  }, [])
 
 
     return (
@@ -176,6 +188,7 @@ function NoteTree({
           {node.children.map(child => (
             <NoteTree
             handleLayout={handleLayout}
+            handleRemoval={handleRemoval}
               key={child.id}
               node={child}
               focusedNode={focusedNode}
