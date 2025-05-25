@@ -19,12 +19,6 @@ const NotesScreen = () => {
   const componentBounds = useRef<NodeTouchableBounds>({})
 
 
-  useEffect(()=>{
-    console.log(`component bounds changed`);
-    console.log(componentBounds.current)
-
-  }, [componentBounds])
-
   const handleSetFocusedNode = (node: MarkedNode) => {
     // clear all path markings
 
@@ -61,8 +55,7 @@ const NotesScreen = () => {
   },[])
 
   const handleRemoval=useCallback((id: number)=>{
-    // delete componentBounds.current[`${id}`];
-    console.log('hadnling removal!');
+    delete componentBounds.current[`${id}`];
   }, [])
 
   const ResponderConfig = {
@@ -104,8 +97,6 @@ function clearPathMarkings(n: MarkedNode){
 };
 
 function findTouchedNode(componentBounds, x, y){
-  console.log(`componetn bounds ref: ${JSON.stringify(componentBounds.current)}`)
-  console.log(`touched x, y: ${x} ${y}`)
   for (const [id, node] of Object.entries(componentBounds.current)) {
     if (
       x > node.x &&
@@ -113,7 +104,6 @@ function findTouchedNode(componentBounds, x, y){
       y > node.y &&
       y < node.y + node.height
     ) {
-      console.log(`found node ${id} w bounds ${node.x} ${node.y}`)
       return { id: parseInt(id), ...node };
     }
   }
