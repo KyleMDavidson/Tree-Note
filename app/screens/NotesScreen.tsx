@@ -16,17 +16,8 @@ type MarkedNode = Node & {
 const NotesScreen = () => {
   const [rootNode, setRootNode] = useState<MarkedNode | null>(ContentfulTestRoot as MarkedNode);
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(ContentfulTestRoot as MarkedNode);
-  const pressedNodeId = useRef<Number>(null)
-  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
-  const [currentTouchNode, setCurrentTouchNode] = useState<MarkedNode | null>(null);
   const componentBounds = useRef<NodeTouchableBounds>({})
 
-
-  useEffect(()=>{
-    console.log(`component bounds changed`);
-    console.log(componentBounds.current)
-
-  }, [componentBounds])
 
   const handleSetFocusedNode = (node: MarkedNode) => {
     // clear all path markings
@@ -64,12 +55,11 @@ const NotesScreen = () => {
   },[])
 
   const handleRemoval=useCallback((id: number)=>{
-    // delete componentBounds.current[`${id}`];
-    console.log('hadnling removal!');
+    delete componentBounds.current[`${id}`];
   }, [])
 
   const ResponderConfig = {
- onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`onResponderMove - found node: ${JSON.stringify(node)} for location ${e.nativeEvent.locationX} ${e.nativeEvent.locationY}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
+ onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
   //  onResponderTerminationRequest: (e)=>true,
     // onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
@@ -81,17 +71,12 @@ const NotesScreen = () => {
     <View style={{flex: 1}}>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={Gesture.Pan()}>
-        <View>
+        <View style={{borderWidth: 1, borderColor: "black"}}>
           {rootNode && 
  <View {...ResponderConfig}>
               <NoteTree 
                 node={rootNode} 
                 focusedNode={focusedNode}
-                isRoot={true}
-                touchStartTime={touchStartTime}
-                setTouchStartTime={setTouchStartTime}
-                currentTouchNode={currentTouchNode}
-                setCurrentTouchNode={setCurrentTouchNode}
                 handleLayout={handleLayout}
                 handleRemoval={handleRemoval}
               />
@@ -112,8 +97,6 @@ function clearPathMarkings(n: MarkedNode){
 };
 
 function findTouchedNode(componentBounds, x, y){
-  console.log(`componetn bounds ref: ${JSON.stringify(componentBounds.current)}`)
-  console.log(`touched x, y: ${x} ${y}`)
   for (const [id, node] of Object.entries(componentBounds.current)) {
     if (
       x > node.x &&
@@ -121,7 +104,6 @@ function findTouchedNode(componentBounds, x, y){
       y > node.y &&
       y < node.y + node.height
     ) {
-      console.log(`found node ${id} w bounds ${node.x} ${node.y}`)
       return { id: parseInt(id), ...node };
     }
   }
@@ -133,23 +115,11 @@ function findTouchedNode(componentBounds, x, y){
 function NoteTree({ 
   node, 
   focusedNode, 
-  setFocusedNode,
-  isRoot = false,
-  touchStartTime,
-  setTouchStartTime,
-  currentTouchNode,
-  setCurrentTouchNode,
   handleLayout,
   handleRemoval
 }: { 
   node: MarkedNode;
   focusedNode: Partial<MarkedNode> | null;
-  setFocusedNode: (node: MarkedNode) => void;
-  isRoot?: boolean;
-  touchStartTime: number | null;
-  setTouchStartTime: (time: number | null) => void;
-  currentTouchNode: MarkedNode | null;
-  setCurrentTouchNode: (node: MarkedNode | null) => void;
   handleLayout: (id: number, touchTarget: any) =>void;
   handleRemoval: (id: number)=>void
 }) {
@@ -165,7 +135,8 @@ function NoteTree({
     return (
     <View>
  <View style={styles.nodeContainer}> 
-    <Text style={styles.nodeTitle} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
+    <Text style={focusedNode ? focusedNode.id == node.id ? [styles.nodeTitle, styles.focusedNodeTitle] : [styles.nodeTitle] : [styles.nodeTitle]} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
+    {focusedNode?.id == node.id ? node?.content ?  <Text style={{borderColor: "black", borderWidth: 2}}>{node.content}</Text>: null : null}
         </View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
@@ -176,12 +147,6 @@ function NoteTree({
               key={child.id}
               node={child}
               focusedNode={focusedNode}
-              setFocusedNode={setFocusedNode}
-              isRoot={false}
-              touchStartTime={touchStartTime}
-              setTouchStartTime={setTouchStartTime}
-              currentTouchNode={currentTouchNode}
-              setCurrentTouchNode={setCurrentTouchNode}
             />
           ))}
         </View>
@@ -222,6 +187,10 @@ const styles = StyleSheet.create({
     margin: 3,
     borderColor: "blue",
     borderWidth: 3
+  },
+  focusedNodeTitle:{
+    borderColor: "red",
+    borderWidth:5
   },
   childrenContainer: {
     marginLeft: 40,
