@@ -16,7 +16,7 @@ const NotesScreen = () => {
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(
     ContentfulTestRoot as MarkedNode
   );
-  const componentBounds = useRef<NodeTouchableBounds>({});
+  const componentBounds = useRef<{[id: number]: NodeTouchableBounds}>({});
   console.log("render notes screen");
 
   const handleSetFocusedNode = useCallback((node: MarkedNode) => {
@@ -42,6 +42,8 @@ const NotesScreen = () => {
   const handleRemoval = useCallback((id: number) => {
     delete componentBounds.current[`${id}`];
   }, []);
+
+
 
   const ResponderConfig = {
     onResponderMove: (e) => {
@@ -143,8 +145,12 @@ function NoteTree({
     node.isOnPathToFocused && node.children.length > 0;
   const touchTargetBoundsRef = useRef(null);
 
+
+  //necessary due to spatial dependency between notes. Looking to eliminate this though - possible if we do something like guarantee the tree that has already been rendered.
+  handleLayout(node.id, touchTargetBoundsRef)
+
   useEffect(() => {
-    return () => handleRemoval(node.id);
+    return () => {handleRemoval(node.id)};
   }, []);
 
   return (
@@ -159,7 +165,7 @@ function NoteTree({
               : [styles.nodeTitle]
           }
           ref={touchTargetBoundsRef}
-          onLayout={(e) => handleLayout(node.id, touchTargetBoundsRef)}
+          // onLayout={(e) =>{console.log(`handle layout for node ${node.title}`); handleLayout(node.id, touchTargetBoundsRef)}}
         >
           {node.title}
         </Text>
@@ -222,7 +228,7 @@ const styles = StyleSheet.create({
   },
   focusedNodeTitle: {
     borderColor: "red",
-    borderWidth: 5,
+    borderWidth: 3,
   },
   childrenContainer: {
     marginLeft: 40,
