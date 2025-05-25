@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { TestRoot } from '../../src/models/fixtures';
+import { ContentfulTestRoot, TestRoot } from '../../src/models/fixtures';
 import { Node, NodeTouchableBounds } from '../../src/models/types';
 
 
@@ -14,8 +14,8 @@ type MarkedNode = Node & {
 
 
 const NotesScreen = () => {
-  const [rootNode, setRootNode] = useState<MarkedNode | null>(TestRoot as MarkedNode);
-  const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(TestRoot as MarkedNode);
+  const [rootNode, setRootNode] = useState<MarkedNode | null>(ContentfulTestRoot as MarkedNode);
+  const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(ContentfulTestRoot as MarkedNode);
   const pressedNodeId = useRef<Number>(null)
   const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
   const [currentTouchNode, setCurrentTouchNode] = useState<MarkedNode | null>(null);
@@ -222,12 +222,12 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "dark grey",
     alignSelf: "flex-start",
-    margin: 5,
+    margin: 3,
     borderColor: "blue",
     borderWidth: 3
   },
   childrenContainer: {
-    marginLeft: 20,
+    marginLeft: 40,
   },
   aboveArea: {
     height: 20,
