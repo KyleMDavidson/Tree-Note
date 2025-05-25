@@ -146,7 +146,7 @@ function NoteTree({
     <View>
  <View style={styles.nodeContainer}> 
     <Text style={focusedNode ? focusedNode.id == node.id ? [styles.nodeTitle, styles.focusedNodeTitle] : [styles.nodeTitle] : [styles.nodeTitle]} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
-    {focusedNode?.id == node.id ? <Text style={{borderColor: "black", borderWidth: 2}}>{node.content}</Text>: null}
+    {focusedNode?.id == node.id ? node?.content ?  <Text style={{borderColor: "black", borderWidth: 2}}>{node.content}</Text>: null : null}
         </View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
