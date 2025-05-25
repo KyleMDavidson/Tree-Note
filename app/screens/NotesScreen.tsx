@@ -36,13 +36,16 @@ const NotesScreen = () => {
     setRootNode(nextRootNode);
   }, []);
 
-  const registerDimensions = useCallback((id, x, y, width, height) => {
-    componentBounds.current[id] = { x: x, y: y, width: width, height: height };
-  }, []);
   const handleLayout = useCallback((id: number, touchTargetRef: any) => {
     if (touchTargetRef.current) {
-      touchTargetRef.current.measureInWindow((x, y, width, height) =>
-        registerDimensions(id, x, y, width, height)
+      touchTargetRef.current.measureInWindow(
+        (x, y, width, height) =>
+          (componentBounds.current[id] = {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+          })
       );
     }
   }, []);
@@ -226,6 +229,7 @@ const styles = StyleSheet.create({
     margin: 3,
     borderColor: "blue",
     borderWidth: 3,
+    width: 70,
   },
   focusedNodeTitle: {
     borderColor: "red",
