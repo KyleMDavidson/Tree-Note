@@ -17,38 +17,17 @@ const NotesScreen = () => {
   const [rootNode, setRootNode] = useState<MarkedNode | null>(ContentfulTestRoot as MarkedNode);
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(ContentfulTestRoot as MarkedNode);
   const componentBounds = useRef<NodeTouchableBounds>({})
+  console.log('render notes screen')
 
 
-  const handleSetFocusedNode = (node: MarkedNode) => {
-    // clear all path markings
-
+  const handleSetFocusedNode = useCallback((node: MarkedNode) => {
     let nextRootNode = null;
     if (rootNode){ clearPathMarkings(rootNode); nextRootNode = {...rootNode}}
-
-    // mark the path to the new focused node
-    //n is our root
-    const markPathToFocused = (n: MarkedNode, target: MarkedNode): boolean => {
-      if (n.id === target.id) {
-        n.isOnPathToFocused = true;
-
-        return true;
-      }
-
-      for (const child of n.children) {
-        if (markPathToFocused(child, target)) {
-          n.isOnPathToFocused = true;
-
-          return true;
-        }
-      }
-
-      return false;
-    };
 
     if (nextRootNode) markPathToFocused(nextRootNode, node);
     setFocusedNode(node);
     setRootNode(nextRootNode)
-  };
+  }, []);
 
   const registerDimensions = useCallback((id, x,y,width,height )=>{componentBounds.current[id]={x:x,y:y,width:width,height:height}},[])
   const handleLayout= useCallback((id: number, touchTargetRef: any) => {
@@ -94,7 +73,25 @@ const NotesScreen = () => {
   );
 }
 
-//this is acting mutably. We need immutable.
+
+function markPathToFocused (n: MarkedNode, target: MarkedNode): boolean {
+      if (n.id === target.id) {
+        n.isOnPathToFocused = true;
+
+        return true;
+      }
+      for (const child of n.children) {
+        if (markPathToFocused(child, target)) {
+          n.isOnPathToFocused = true;
+
+          return true;
+        }
+      }
+
+      return false;
+};
+
+
 function clearPathMarkings(n: MarkedNode){
   n.isOnPathToFocused = false
 
