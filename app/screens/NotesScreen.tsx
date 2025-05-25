@@ -147,7 +147,9 @@ function NoteTree({
 
 
   //necessary due to spatial dependency between notes. Looking to eliminate this though - possible if we do something like guarantee the tree that has already been rendered.
+  useEffect(()=>{
   handleLayout(node.id, touchTargetBoundsRef)
+  },[focusedNode])
 
   useEffect(() => {
     return () => {handleRemoval(node.id)};
