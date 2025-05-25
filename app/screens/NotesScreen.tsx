@@ -59,7 +59,7 @@ const NotesScreen = () => {
   }, [])
 
   const ResponderConfig = {
- onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);node ?console.log(`onResponderMove - found node: ${JSON.stringify(node.id)} for location ${e.nativeEvent.locationX} ${e.nativeEvent.locationY}`): null;node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
+ onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
   //  onResponderTerminationRequest: (e)=>true,
     // onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
