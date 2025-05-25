@@ -7,12 +7,7 @@ import {
 } from "react-native-gesture-handler";
 
 import { ContentfulTestRoot } from "../../src/models/fixtures";
-import { Node, NodeTouchableBounds } from "../../src/models/types";
-
-// Add a new type that includes the path marking
-type MarkedNode = Node & {
-  isOnPathToFocused?: boolean;
-};
+import { MarkedNode, NodeTouchableBounds } from "../../src/models/types";
 
 const NotesScreen = () => {
   const [rootNode, setRootNode] = useState<MarkedNode | null>(
@@ -38,14 +33,8 @@ const NotesScreen = () => {
 
   const handleLayout = useCallback((id: number, touchTargetRef: any) => {
     if (touchTargetRef.current) {
-      touchTargetRef.current.measureInWindow(
-        (x, y, width, height) =>
-          (componentBounds.current[id] = {
-            x: x,
-            y: y,
-            width: width,
-            height: height,
-          })
+      touchTargetRef.current.measureInWindow((x, y, width, height) =>
+    (componentBounds.current[id] = { x: x, y: y, width: width, height: height })
       );
     }
   }, []);
@@ -66,7 +55,7 @@ const NotesScreen = () => {
     onMoveShouldSetResponder: (e) => true,
     onResponderRelease: (e) => console.log("release responder."),
     //  onResponderTerminationRequest: (e)=>true,
-    // onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
+    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   };
 
   return (
@@ -229,7 +218,7 @@ const styles = StyleSheet.create({
     margin: 3,
     borderColor: "blue",
     borderWidth: 3,
-    width: 70,
+    width: 70
   },
   focusedNodeTitle: {
     borderColor: "red",

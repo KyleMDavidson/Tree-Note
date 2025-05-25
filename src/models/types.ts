@@ -7,6 +7,13 @@ type Node = {
     children: Node[]
 }
 
+type MarkedNode = Node & {
+  isOnPathToFocused?: boolean;
+};
+
+
+
+
 type TouchState = {
     startX: number;
     startY: number;
@@ -30,7 +37,7 @@ type HoverState = {
     hoveredNodeId: number | null;
 }
 
-export type { HoverState, Leaf, Node, NodeTouchableBounds, TouchState };
+export type { HoverState, Leaf, MarkedNode, Node, NodeTouchableBounds, TouchState };
 
 // Add default export to satisfy Expo Router
 export default {};
