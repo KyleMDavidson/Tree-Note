@@ -153,22 +153,19 @@ function NoteTree({
   handleLayout: (id: number, touchTarget: any) =>void;
   handleRemoval: (id: number)=>void
 }) {
-  const isFocused = focusedNode?.id === node.id;
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
-  const isBeingPressed = currentTouchNode?.id === node.id;
   const touchTargetBoundsRef = useRef(null)
-
+  
+  
   useEffect(()=>{
-    // return ()=>handleRemoval(node.id)
-    return ()=>console.log('fuck')
-  }, [])
-
+         return ()=>handleRemoval(node.id)
+      }, [])
+    
 
     return (
     <View>
  <View style={styles.nodeContainer}> 
     <Text style={styles.nodeTitle} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
-        {/* <Text style={styles.nodeTitle}>{node.title}</Text></View> */}
         </View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
