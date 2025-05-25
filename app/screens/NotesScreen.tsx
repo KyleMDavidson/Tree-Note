@@ -22,9 +22,11 @@ const NotesScreen = () => {
   const handleSetFocusedNode = (node: MarkedNode) => {
     // clear all path markings
 
-    if (rootNode) clearPathMarkings(rootNode);
+    let nextRootNode = null;
+    if (rootNode){ clearPathMarkings(rootNode); nextRootNode = {...rootNode}}
 
     // mark the path to the new focused node
+    //n is our root
     const markPathToFocused = (n: MarkedNode, target: MarkedNode): boolean => {
       if (n.id === target.id) {
         n.isOnPathToFocused = true;
@@ -43,8 +45,9 @@ const NotesScreen = () => {
       return false;
     };
 
-    if (rootNode) markPathToFocused(rootNode, node);
+    if (nextRootNode) markPathToFocused(nextRootNode, node);
     setFocusedNode(node);
+    setRootNode(nextRootNode)
   };
 
   const registerDimensions = useCallback((id, x,y,width,height )=>{componentBounds.current[id]={x:x,y:y,width:width,height:height}},[])
@@ -61,6 +64,7 @@ const NotesScreen = () => {
   const ResponderConfig = {
  onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
+  onResponderRelease: (e)=>console.log('release responder.')
   //  onResponderTerminationRequest: (e)=>true,
     // onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   }
@@ -90,6 +94,7 @@ const NotesScreen = () => {
   );
 }
 
+//this is acting mutably. We need immutable.
 function clearPathMarkings(n: MarkedNode){
   n.isOnPathToFocused = false
 
