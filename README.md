@@ -9,4 +9,3 @@ say, a route. The route you walk to work. Is that 100 decisions? or is it one su
 
 So we make our structured notes easy to access, and not just generate. You press your finger down on the root note, which displays it's children. Then you drag your finger
 over the children. You recursively do this until you reach your target note. When you take your finger off the tree layout, you are navigated into the note you've chosen with the path you pressed.
-
