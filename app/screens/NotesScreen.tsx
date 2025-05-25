@@ -145,8 +145,8 @@ function NoteTree({
     return (
     <View>
  <View style={styles.nodeContainer}> 
-    <Text style={styles.nodeTitle} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
-    {focusedNode?.id == node.id ? <Text>{node.content}</Text>: null}
+    <Text style={focusedNode ? focusedNode.id == node.id ? [styles.nodeTitle, styles.focusedNodeTitle] : [styles.nodeTitle] : [styles.nodeTitle]} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
+    {focusedNode?.id == node.id ? <Text style={{borderColor: "black", borderWidth: 2}}>{node.content}</Text>: null}
         </View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
@@ -197,6 +197,10 @@ const styles = StyleSheet.create({
     margin: 3,
     borderColor: "blue",
     borderWidth: 3
+  },
+  focusedNodeTitle:{
+    borderColor: "red",
+    borderWidth:5
   },
   childrenContainer: {
     marginLeft: 40,
