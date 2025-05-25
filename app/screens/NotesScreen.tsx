@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import { Gesture, GestureDetector, GestureHandlerRootView } from 'react-native-gesture-handler';
 
-import { ContentfulTestRoot, TestRoot } from '../../src/models/fixtures';
+import { ContentfulTestRoot } from '../../src/models/fixtures';
 import { Node, NodeTouchableBounds } from '../../src/models/types';
 
 
@@ -157,19 +157,6 @@ function NoteTree({
   const shouldRenderChildren = node.isOnPathToFocused && node.children.length > 0;
   const isBeingPressed = currentTouchNode?.id === node.id;
   const touchTargetBoundsRef = useRef(null)
-
-  const handlePress = () => {
-    setFocusedNode(node);
-  };
-
-  const handlePressAbove = () => {
-    if (!isRoot) {
-      const parent = findParent(TestRoot as MarkedNode, node);
-      if (parent) {
-        setFocusedNode(parent);
-      }
-    }
-  }
 
   useEffect(()=>{
     // return ()=>handleRemoval(node.id)
