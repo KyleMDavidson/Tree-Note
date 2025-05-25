@@ -16,7 +16,6 @@ type MarkedNode = Node & {
 const NotesScreen = () => {
   const [rootNode, setRootNode] = useState<MarkedNode | null>(ContentfulTestRoot as MarkedNode);
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(ContentfulTestRoot as MarkedNode);
-  const pressedNodeId = useRef<Number>(null)
   const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
   const componentBounds = useRef<NodeTouchableBounds>({})
 
@@ -134,8 +133,6 @@ function NoteTree({
   isRoot = false,
   touchStartTime,
   setTouchStartTime,
-  currentTouchNode,
-  setCurrentTouchNode,
   handleLayout,
   handleRemoval
 }: { 
