@@ -16,7 +16,6 @@ type MarkedNode = Node & {
 const NotesScreen = () => {
   const [rootNode, setRootNode] = useState<MarkedNode | null>(ContentfulTestRoot as MarkedNode);
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(ContentfulTestRoot as MarkedNode);
-  const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
   const componentBounds = useRef<NodeTouchableBounds>({})
 
 
@@ -85,9 +84,6 @@ const NotesScreen = () => {
               <NoteTree 
                 node={rootNode} 
                 focusedNode={focusedNode}
-                isRoot={true}
-                touchStartTime={touchStartTime}
-                setTouchStartTime={setTouchStartTime}
                 handleLayout={handleLayout}
                 handleRemoval={handleRemoval}
               />
@@ -129,19 +125,11 @@ function findTouchedNode(componentBounds, x, y){
 function NoteTree({ 
   node, 
   focusedNode, 
-  setFocusedNode,
-  isRoot = false,
-  touchStartTime,
-  setTouchStartTime,
   handleLayout,
   handleRemoval
 }: { 
   node: MarkedNode;
   focusedNode: Partial<MarkedNode> | null;
-  setFocusedNode: (node: MarkedNode) => void;
-  isRoot?: boolean;
-  touchStartTime: number | null;
-  setTouchStartTime: (time: number | null) => void;
   handleLayout: (id: number, touchTarget: any) =>void;
   handleRemoval: (id: number)=>void
 }) {
@@ -158,6 +146,7 @@ function NoteTree({
     <View>
  <View style={styles.nodeContainer}> 
     <Text style={styles.nodeTitle} ref={touchTargetBoundsRef} onLayout={(e)=>handleLayout(node.id, touchTargetBoundsRef)}>{node.title}</Text>
+    {focusedNode?.id == node.id ? <Text>{node.content}</Text>: null}
         </View>
       {shouldRenderChildren && (
         <View style={styles.childrenContainer}>
@@ -168,10 +157,6 @@ function NoteTree({
               key={child.id}
               node={child}
               focusedNode={focusedNode}
-              setFocusedNode={setFocusedNode}
-              isRoot={false}
-              touchStartTime={touchStartTime}
-              setTouchStartTime={setTouchStartTime}
             />
           ))}
         </View>
