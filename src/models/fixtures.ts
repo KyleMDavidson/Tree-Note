@@ -59,7 +59,7 @@ export const ContentfulTestRoot: Node = {
         },
         {
           id: 9,
-          children: [],
+          children: [{id: 13, children: [], title: "flowers", content: ""}],
           title: "yard",
           content: "",
         },

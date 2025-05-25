@@ -18,7 +18,6 @@ const NotesScreen = () => {
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(ContentfulTestRoot as MarkedNode);
   const pressedNodeId = useRef<Number>(null)
   const [touchStartTime, setTouchStartTime] = useState<number | null>(null);
-  const [currentTouchNode, setCurrentTouchNode] = useState<MarkedNode | null>(null);
   const componentBounds = useRef<NodeTouchableBounds>({})
 
 
@@ -69,7 +68,7 @@ const NotesScreen = () => {
   }, [])
 
   const ResponderConfig = {
- onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);console.log(`onResponderMove - found node: ${JSON.stringify(node)} for location ${e.nativeEvent.locationX} ${e.nativeEvent.locationY}`);node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
+ onResponderMove: (e)=>{const node = findTouchedNode(componentBounds, e.nativeEvent.locationX, e.nativeEvent.locationY);node ?console.log(`onResponderMove - found node: ${JSON.stringify(node.id)} for location ${e.nativeEvent.locationX} ${e.nativeEvent.locationY}`): null;node ? node!= focusedNode ? handleSetFocusedNode(node): null : null},
   onMoveShouldSetResponder:(e)=>true,
   //  onResponderTerminationRequest: (e)=>true,
     // onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
@@ -81,7 +80,7 @@ const NotesScreen = () => {
     <View style={{flex: 1}}>
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={Gesture.Pan()}>
-        <View>
+        <View style={{borderWidth: 1, borderColor: "black"}}>
           {rootNode && 
  <View {...ResponderConfig}>
               <NoteTree 
@@ -90,8 +89,6 @@ const NotesScreen = () => {
                 isRoot={true}
                 touchStartTime={touchStartTime}
                 setTouchStartTime={setTouchStartTime}
-                currentTouchNode={currentTouchNode}
-                setCurrentTouchNode={setCurrentTouchNode}
                 handleLayout={handleLayout}
                 handleRemoval={handleRemoval}
               />
@@ -148,8 +145,6 @@ function NoteTree({
   isRoot?: boolean;
   touchStartTime: number | null;
   setTouchStartTime: (time: number | null) => void;
-  currentTouchNode: MarkedNode | null;
-  setCurrentTouchNode: (node: MarkedNode | null) => void;
   handleLayout: (id: number, touchTarget: any) =>void;
   handleRemoval: (id: number)=>void
 }) {
@@ -180,8 +175,6 @@ function NoteTree({
               isRoot={false}
               touchStartTime={touchStartTime}
               setTouchStartTime={setTouchStartTime}
-              currentTouchNode={currentTouchNode}
-              setCurrentTouchNode={setCurrentTouchNode}
             />
           ))}
         </View>
