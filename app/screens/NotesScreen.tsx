@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
@@ -47,7 +47,7 @@ const NotesScreen = () => {
     );
   }, []);
 
-  useEffect(()=>{
+  useLayoutEffect(()=>{
     handleLayouts()
     console.log(`new component bounds: ${JSON.stringify(componentBounds.current)}`)
   },[focusedNode])
