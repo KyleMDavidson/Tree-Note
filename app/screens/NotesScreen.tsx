@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
@@ -47,9 +47,10 @@ const NotesScreen = () => {
     );
   }, []);
 
-  useLayoutEffect(()=>{
+  //this is only triggering on collapse
+  useEffect(()=>{
+    console.log("handling layouts.")
     handleLayouts()
-    console.log(`new component bounds: ${JSON.stringify(componentBounds.current)}`)
   },[focusedNode])
 
   const handleRemoval = useCallback((id: number) => {
@@ -158,14 +159,8 @@ function NoteTree({
 
   //necessary due to spatial dependency between notes. Looking to eliminate this though - possible if we do something like guarantee the tree that has already been rendered.
 
-  useEffect(() => {componentRefs.current[node.id] = touchTargetBoundsRef; return ()=>{delete componentRefs.current[node.id]}}, [focusedNode]);
+  useEffect(() => {componentRefs.current[node.id] = touchTargetBoundsRef; return ()=>{delete componentRefs.current[node.id]; handleRemoval(node.id)}}, [focusedNode]);
 
-
-  useEffect(() => {
-    return () => {
-      handleRemoval(node.id);
-    };
-  }, []);
 
   return (
     <View>
@@ -196,7 +191,6 @@ function NoteTree({
           {node.children.map((child) => (
             <NoteTree
               componentRefs={componentRefs}
-              handleLayout={handleLayout}
               handleRemoval={handleRemoval}
               key={child.id}
               node={child}
