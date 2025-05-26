@@ -1,5 +1,5 @@
-import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, StyleSheet, Text, View } from "react-native";
+import { RefObject, useCallback, useEffect, useRef, useState } from "react";
+import { Button, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -10,13 +10,14 @@ import { ContentfulTestRoot } from "../../src/models/fixtures";
 import { MarkedNode, NodeTouchableBounds } from "../../src/models/types";
 
 const NotesScreen = () => {
-  const [rootNode, setRootNode] = useState<MarkedNode | null>(
+  const [rootNode, setRootNode] = useState<MarkedNode>(
     ContentfulTestRoot as MarkedNode
   );
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(
     ContentfulTestRoot as MarkedNode
   );
-  const componentBounds = useRef<{[id: number]: NodeTouchableBounds}>({});
+  const componentBounds = useRef<{[id: string]: (NodeTouchableBounds & {ref: RefObject<any>})}>({});
+  const componentRefs = useRef<{[id: string]: Ref<any>}>({})
   console.log("render notes screen");
 
   const handleSetFocusedNode = useCallback((node: MarkedNode) => {
@@ -31,18 +32,17 @@ const NotesScreen = () => {
     setRootNode(nextRootNode);
   }, []);
 
-  const handleLayout = useCallback((id: number, touchTargetRef: any) => {
-    if (touchTargetRef.current) {
-      touchTargetRef.current.measureInWindow((x, y, width, height) =>
-    (componentBounds.current[id] = { x: x, y: y, width: width, height: height })
-      );
-    }
-  }, []);
+  const handleLayouts = useCallback(() => {
+        Object.entries(componentRefs).map(([k,v])=>v.measureInWindow((x, y, width, height) =>
+      (componentBounds.current[k] = { x: x, y: y, width: width, height: height })
+        )
+      )
+      }
+    , []);
 
   const handleRemoval = useCallback((id: number) => {
     delete componentBounds.current[`${id}`];
   }, []);
-
 
 
   const ResponderConfig = {
@@ -55,9 +55,9 @@ const NotesScreen = () => {
       node ? (node != focusedNode ? handleSetFocusedNode(node) : null) : null;
     },
     onMoveShouldSetResponder: (e) => true,
-    onResponderRelease: (e) => console.log("release responder."),
+//    onResponderRelease: (e) => console.log("release responder."),
     //  onResponderTerminationRequest: (e)=>true,
-    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
+//    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   };
 
   return (
@@ -69,9 +69,9 @@ const NotesScreen = () => {
             {rootNode && (
               <View {...ResponderConfig}>
                 <NoteTree
+                  componentRefs={componentRefs}
                   node={rootNode}
                   focusedNode={focusedNode}
-                  handleLayout={handleLayout}
                   handleRemoval={handleRemoval}
                 />
               </View>
@@ -116,7 +116,7 @@ function clearPathMarkings(n: MarkedNode) {
   n.children.forEach(clearPathMarkings);
 }
 
-function findTouchedNode(componentBounds, x, y) {
+function findTouchedNode(componentBounds: NodeTouchableBounds, x, y) {
   for (const [id, node] of Object.entries(componentBounds.current)) {
     if (
       x > node.x &&
@@ -133,13 +133,13 @@ function findTouchedNode(componentBounds, x, y) {
 function NoteTree({
   node,
   focusedNode,
-  handleLayout,
   handleRemoval,
+  componentRefs
 }: {
   node: MarkedNode;
   focusedNode: Partial<MarkedNode> | null;
-  handleLayout: (id: number, touchTarget: any) => void;
   handleRemoval: (id: number) => void;
+  componentRefs: RefObject<{[id: string]: RefObject<any>}>
 }) {
   const shouldRenderChildren =
     node.isOnPathToFocused && node.children.length > 0;
@@ -147,9 +147,12 @@ function NoteTree({
 
 
   //necessary due to spatial dependency between notes. Looking to eliminate this though - possible if we do something like guarantee the tree that has already been rendered.
+
   useEffect(()=>{
-  handleLayout(node.id, touchTargetBoundsRef)
-  },[focusedNode])
+
+  }, [focusedNode])
+
+
 
   useEffect(() => {
     return () => {handleRemoval(node.id)};
@@ -183,6 +186,7 @@ function NoteTree({
         <View style={styles.childrenContainer}>
           {node.children.map((child) => (
             <NoteTree
+            componentRefs={componentRefs}
               handleLayout={handleLayout}
               handleRemoval={handleRemoval}
               key={child.id}
@@ -209,36 +213,5 @@ function findParent(root: MarkedNode, target: MarkedNode): MarkedNode | null {
   return null;
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  nodeContainer: {
-    display: "flex",
-    flexDirection: "row",
-    alignItems: "flex-start",
-  },
-  nodeTitle: {
-    fontSize: 20,
-    color: "dark grey",
-    alignSelf: "flex-start",
-    margin: 5,
-    borderColor: "blue",
-    borderWidth: 3,
-    width: 70
-  },
-  focusedNodeTitle: {
-    borderColor: "red",
-    borderWidth: 3,
-  },
-  childrenContainer: {
-    marginLeft: 60,
-  },
-  aboveArea: {
-    height: 20,
-    backgroundColor: "transparent",
-  },
-});
 
 export default NotesScreen;

@@ -12,8 +12,6 @@ type MarkedNode = Node & {
 };
 
 
-
-
 type TouchState = {
     startX: number;
     startY: number;
