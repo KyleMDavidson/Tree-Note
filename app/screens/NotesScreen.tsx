@@ -223,7 +223,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     color: "dark grey",
     alignSelf: "flex-start",
-    margin: 3,
+    margin: 5,
     borderColor: "blue",
     borderWidth: 3,
     width: 70
@@ -233,7 +233,7 @@ const styles = StyleSheet.create({
     borderWidth: 3,
   },
   childrenContainer: {
-    marginLeft: 40,
+    marginLeft: 60,
   },
   aboveArea: {
     height: 20,
