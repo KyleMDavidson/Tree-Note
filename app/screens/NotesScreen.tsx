@@ -11,6 +11,7 @@ import { MarkedNode, NodeTouchableBounds } from "../../src/models/types";
 
 const NotesScreen = () => {
   const [rootNode, setRootNode] = useState<MarkedNode>(
+
     ContentfulTestRoot as MarkedNode
   );
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(
@@ -20,6 +21,7 @@ const NotesScreen = () => {
     [id: string]: NodeTouchableBounds & { ref: RefObject<any> };
   }>({});
   const componentRefs = useRef<{ [id: string]: RefObject<any> }>({});
+
 
   const handleSetFocusedNode = useCallback((node: MarkedNode) => {
     let nextRootNode = null;
@@ -53,6 +55,7 @@ const NotesScreen = () => {
     handleLayouts()
   },[focusedNode])
 
+
   const handleRemoval = useCallback((id: number) => {
     delete componentBounds.current[`${id}`];
   }, []);
@@ -70,6 +73,22 @@ const NotesScreen = () => {
     //    onResponderRelease: (e) => console.log("release responder."),
     //  onResponderTerminationRequest: (e)=>true,
     //    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
+  };
+
+
+  const ResponderConfig = {
+    onResponderMove: (e) => {
+      const node = findTouchedNode(
+        componentBounds,
+        e.nativeEvent.locationX,
+        e.nativeEvent.locationY
+      );
+      node ? (node != focusedNode ? handleSetFocusedNode(node) : null) : null;
+    },
+    onMoveShouldSetResponder: (e) => true,
+    onResponderRelease: (e) => console.log("release responder."),
+    //  onResponderTerminationRequest: (e)=>true,
+    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   };
 
   return (
@@ -174,7 +193,6 @@ function NoteTree({
               : [styles.nodeTitle]
           }
           ref={touchTargetBoundsRef}
-          //this only runs when this component's internal layout has changed, not when it's shifted due to external layout e.g. parent or sibling alterations.
         >
           {node.title}
         </Text>
