@@ -75,22 +75,6 @@ const NotesScreen = () => {
     //    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   };
 
-
-  const ResponderConfig = {
-    onResponderMove: (e) => {
-      const node = findTouchedNode(
-        componentBounds,
-        e.nativeEvent.locationX,
-        e.nativeEvent.locationY
-      );
-      node ? (node != focusedNode ? handleSetFocusedNode(node) : null) : null;
-    },
-    onMoveShouldSetResponder: (e) => true,
-    onResponderRelease: (e) => console.log("release responder."),
-    //  onResponderTerminationRequest: (e)=>true,
-    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
-  };
-
   return (
     //superior for performance to pan responder (which is more liable to suffer locks on the thread)
     <View style={{ flex: 1 }}>
