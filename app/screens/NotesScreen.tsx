@@ -1,5 +1,5 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
-import { Button, Text, View } from "react-native";
+import { Button, StyleSheet, Text, View } from "react-native";
 import {
   Gesture,
   GestureDetector,
@@ -19,8 +19,7 @@ const NotesScreen = () => {
   const componentBounds = useRef<{
     [id: string]: NodeTouchableBounds & { ref: RefObject<any> };
   }>({});
-  const componentRefs = useRef<{ [id: string]: Ref<any> }>({});
-  console.log("render notes screen");
+  const componentRefs = useRef<{ [id: string]: RefObject<any> }>({});
 
   const handleSetFocusedNode = useCallback((node: MarkedNode) => {
     let nextRootNode = null;
@@ -35,8 +34,8 @@ const NotesScreen = () => {
   }, []);
 
   const handleLayouts = useCallback(() => {
-    Object.entries(componentRefs).map(([k, v]) =>
-      v.measureInWindow(
+    Object.entries(componentRefs.current).map(([k, v]) =>
+      v.current.measureInWindow(
         (x, y, width, height) =>
           (componentBounds.current[k] = {
             x: x,
@@ -47,6 +46,11 @@ const NotesScreen = () => {
       )
     );
   }, []);
+
+  useEffect(()=>{
+    handleLayouts()
+    console.log(`new component bounds: ${JSON.stringify(componentBounds.current)}`)
+  },[focusedNode])
 
   const handleRemoval = useCallback((id: number) => {
     delete componentBounds.current[`${id}`];
@@ -123,7 +127,7 @@ function clearPathMarkings(n: MarkedNode) {
   n.children.forEach(clearPathMarkings);
 }
 
-function findTouchedNode(componentBounds: NodeTouchableBounds, x, y) {
+function findTouchedNode(componentBounds: RefObject<NodeTouchableBounds>, x, y) {
   for (const [id, node] of Object.entries(componentBounds.current)) {
     if (
       x > node.x &&
@@ -154,7 +158,8 @@ function NoteTree({
 
   //necessary due to spatial dependency between notes. Looking to eliminate this though - possible if we do something like guarantee the tree that has already been rendered.
 
-  useEffect(() => {}, [focusedNode]);
+  useEffect(() => {componentRefs.current[node.id] = touchTargetBoundsRef; return ()=>{delete componentRefs.current[node.id]}}, [focusedNode]);
+
 
   useEffect(() => {
     return () => {
@@ -174,7 +179,7 @@ function NoteTree({
               : [styles.nodeTitle]
           }
           ref={touchTargetBoundsRef}
-          // onLayout={(e) =>{console.log(`handle layout for node ${node.title}`); handleLayout(node.id, touchTargetBoundsRef)}}
+          //this only runs when this component's internal layout has changed, not when it's shifted due to external layout e.g. parent or sibling alterations.
         >
           {node.title}
         </Text>
