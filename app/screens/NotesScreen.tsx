@@ -16,7 +16,8 @@ const NotesScreen = () => {
   const [focusedNode, setFocusedNode] = useState<Partial<MarkedNode> | null>(
     ContentfulTestRoot as MarkedNode
   );
-  const componentBounds = useRef<{[id: string]: (NodeTouchableBounds & {ref: RefObject<any>})}>({});
+  const componentBounds = useRef<{
+    [id: string]: (NodeTouchableBounds & {ref: RefObject<any>})}>({});
   const componentRefs = useRef<{[id: string]: Ref<any>}>({})
   console.log("render notes screen");
 
@@ -212,6 +213,43 @@ function findParent(root: MarkedNode, target: MarkedNode): MarkedNode | null {
 
   return null;
 }
+
+
+
+ 
+const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: "#fff",
+    },
+    nodeContainer: {
+      display: "flex",
+      flexDirection: "row",
+      alignItems: "flex-start",
+    },
+    nodeTitle: {
+      fontSize: 20,
+      color: "dark grey",
+      alignSelf: "flex-start",
+      margin: 5,
+      borderColor: "blue",
+      borderWidth: 3,
+      width: 70
+    },
+    focusedNodeTitle: {
+      borderColor: "red",
+      borderWidth: 3,
+    },
+    childrenContainer: {
+      marginLeft: 60,
+    },
+    aboveArea: {
+     height: 20,
+      backgroundColor: "transparent",
+    },
+  });
+   
+  
 
 
 export default NotesScreen;
