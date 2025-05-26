@@ -17,8 +17,9 @@ const NotesScreen = () => {
     ContentfulTestRoot as MarkedNode
   );
   const componentBounds = useRef<{
-    [id: string]: (NodeTouchableBounds & {ref: RefObject<any>})}>({});
-  const componentRefs = useRef<{[id: string]: Ref<any>}>({})
+    [id: string]: NodeTouchableBounds & { ref: RefObject<any> };
+  }>({});
+  const componentRefs = useRef<{ [id: string]: Ref<any> }>({});
   console.log("render notes screen");
 
   const handleSetFocusedNode = useCallback((node: MarkedNode) => {
@@ -34,17 +35,22 @@ const NotesScreen = () => {
   }, []);
 
   const handleLayouts = useCallback(() => {
-        Object.entries(componentRefs).map(([k,v])=>v.measureInWindow((x, y, width, height) =>
-      (componentBounds.current[k] = { x: x, y: y, width: width, height: height })
-        )
+    Object.entries(componentRefs).map(([k, v]) =>
+      v.measureInWindow(
+        (x, y, width, height) =>
+          (componentBounds.current[k] = {
+            x: x,
+            y: y,
+            width: width,
+            height: height,
+          })
       )
-      }
-    , []);
+    );
+  }, []);
 
   const handleRemoval = useCallback((id: number) => {
     delete componentBounds.current[`${id}`];
   }, []);
-
 
   const ResponderConfig = {
     onResponderMove: (e) => {
@@ -56,9 +62,9 @@ const NotesScreen = () => {
       node ? (node != focusedNode ? handleSetFocusedNode(node) : null) : null;
     },
     onMoveShouldSetResponder: (e) => true,
-//    onResponderRelease: (e) => console.log("release responder."),
+    //    onResponderRelease: (e) => console.log("release responder."),
     //  onResponderTerminationRequest: (e)=>true,
-//    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
+    //    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
   };
 
   return (
@@ -135,28 +141,25 @@ function NoteTree({
   node,
   focusedNode,
   handleRemoval,
-  componentRefs
+  componentRefs,
 }: {
   node: MarkedNode;
   focusedNode: Partial<MarkedNode> | null;
   handleRemoval: (id: number) => void;
-  componentRefs: RefObject<{[id: string]: RefObject<any>}>
+  componentRefs: RefObject<{ [id: string]: RefObject<any> }>;
 }) {
   const shouldRenderChildren =
     node.isOnPathToFocused && node.children.length > 0;
   const touchTargetBoundsRef = useRef(null);
 
-
   //necessary due to spatial dependency between notes. Looking to eliminate this though - possible if we do something like guarantee the tree that has already been rendered.
 
-  useEffect(()=>{
-
-  }, [focusedNode])
-
-
+  useEffect(() => {}, [focusedNode]);
 
   useEffect(() => {
-    return () => {handleRemoval(node.id)};
+    return () => {
+      handleRemoval(node.id);
+    };
   }, []);
 
   return (
@@ -187,7 +190,7 @@ function NoteTree({
         <View style={styles.childrenContainer}>
           {node.children.map((child) => (
             <NoteTree
-            componentRefs={componentRefs}
+              componentRefs={componentRefs}
               handleLayout={handleLayout}
               handleRemoval={handleRemoval}
               key={child.id}
@@ -214,42 +217,36 @@ function findParent(root: MarkedNode, target: MarkedNode): MarkedNode | null {
   return null;
 }
 
-
-
- 
 const styles = StyleSheet.create({
-    container: {
-      flex: 1,
-      backgroundColor: "#fff",
-    },
-    nodeContainer: {
-      display: "flex",
-      flexDirection: "row",
-      alignItems: "flex-start",
-    },
-    nodeTitle: {
-      fontSize: 20,
-      color: "dark grey",
-      alignSelf: "flex-start",
-      margin: 5,
-      borderColor: "blue",
-      borderWidth: 3,
-      width: 70
-    },
-    focusedNodeTitle: {
-      borderColor: "red",
-      borderWidth: 3,
-    },
-    childrenContainer: {
-      marginLeft: 60,
-    },
-    aboveArea: {
-     height: 20,
-      backgroundColor: "transparent",
-    },
-  });
-   
-  
-
+  container: {
+    flex: 1,
+    backgroundColor: "#fff",
+  },
+  nodeContainer: {
+    display: "flex",
+    flexDirection: "row",
+    alignItems: "flex-start",
+  },
+  nodeTitle: {
+    fontSize: 20,
+    color: "dark grey",
+    alignSelf: "flex-start",
+    margin: 5,
+    borderColor: "blue",
+    borderWidth: 3,
+    width: 70,
+  },
+  focusedNodeTitle: {
+    borderColor: "red",
+    borderWidth: 3,
+  },
+  childrenContainer: {
+    marginLeft: 60,
+  },
+  aboveArea: {
+    height: 20,
+    backgroundColor: "transparent",
+  },
+});
 
 export default NotesScreen;
