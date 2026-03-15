@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import { runOnJS } from "react-native-reanimated";
 
 import { computeLayout } from "./layout";
 import { ContentfulTestRoot } from "./fixtures";
@@ -40,9 +41,14 @@ const Notes = () => {
 
   const gesture = Gesture.Pan()
     .minDistance(0)
-    .runOnJS(true)
-    .onStart((e) => handleTouch(e.x, e.y))
-    .onUpdate((e) => handleTouch(e.x, e.y));
+    .onStart((e) => {
+      "worklet";
+      runOnJS(handleTouch)(e.x, e.y);
+    })
+    .onUpdate((e) => {
+      "worklet";
+      runOnJS(handleTouch)(e.x, e.y);
+    });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
