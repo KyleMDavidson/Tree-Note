@@ -1,10 +1,6 @@
 import { RefObject, useCallback, useEffect, useRef, useState } from "react";
 import { Button, StyleSheet, Text, View } from "react-native";
-import {
-  Gesture,
-  GestureDetector,
-  GestureHandlerRootView,
-} from "react-native-gesture-handler";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
 
 import { ContentfulTestRoot } from "../../src/models/fixtures";
 import { MarkedNode, NodeTouchableBounds } from "../../src/models/types";
@@ -24,6 +20,7 @@ const NotesScreen = () => {
 
 
   const handleSetFocusedNode = useCallback((node: MarkedNode) => {
+    console.log(`[handleSetFocusedNode] called with node id=${node.id}`);
     let nextRootNode = null;
     if (rootNode) {
       clearPathMarkings(rootNode);
@@ -36,17 +33,19 @@ const NotesScreen = () => {
   }, []);
 
   const handleLayouts = useCallback(() => {
-    Object.entries(componentRefs.current).map(([k, v]) =>
+    Object.entries(componentRefs.current).map(([k, v]) => {
+      console.log(`[handleLayouts] measuring id=${k}, ref.current=${v.current}`);
+      if (!v.current) {
+        console.warn(`[handleLayouts] ref.current is null for id=${k}, skipping`);
+        return;
+      }
       v.current.measureInWindow(
-        (x, y, width, height) =>
-          (componentBounds.current[k] = {
-            x: x,
-            y: y,
-            width: width,
-            height: height,
-          })
-      )
-    );
+        (x, y, width, height) => {
+          console.log(`[handleLayouts] measured id=${k}: x=${x} y=${y} w=${width} h=${height}`);
+          componentBounds.current[k] = { x, y, width, height };
+        }
+      );
+    });
   }, []);
 
   //this is only triggering on collapse
@@ -62,14 +61,20 @@ const NotesScreen = () => {
 
   const ResponderConfig = {
     onResponderMove: (e) => {
+      console.log(`[onResponderMove] locationX=${e.nativeEvent.locationX} locationY=${e.nativeEvent.locationY}`);
+      console.log(`[onResponderMove] componentBounds keys:`, Object.keys(componentBounds.current));
       const node = findTouchedNode(
         componentBounds,
         e.nativeEvent.locationX,
         e.nativeEvent.locationY
       );
+      console.log(`[onResponderMove] findTouchedNode result:`, node);
       node ? (node != focusedNode ? handleSetFocusedNode(node) : null) : null;
     },
-    onMoveShouldSetResponder: (e) => true,
+    onMoveShouldSetResponder: (e) => {
+      console.log(`[onMoveShouldSetResponder] fired`);
+      return true;
+    },
     //    onResponderRelease: (e) => console.log("release responder."),
     //  onResponderTerminationRequest: (e)=>true,
     //    onResponderGrant: (e)=>console.log(`responder granted in node ${e.target}`),
@@ -79,20 +84,18 @@ const NotesScreen = () => {
     //superior for performance to pan responder (which is more liable to suffer locks on the thread)
     <View style={{ flex: 1 }}>
       <GestureHandlerRootView style={{ flex: 1 }}>
-        <GestureDetector gesture={Gesture.Pan()}>
-          <View style={{ borderWidth: 1, borderColor: "black" }}>
-            {rootNode && (
-              <View {...ResponderConfig}>
-                <NoteTree
-                  componentRefs={componentRefs}
-                  node={rootNode}
-                  focusedNode={focusedNode}
-                  handleRemoval={handleRemoval}
-                />
-              </View>
-            )}
-          </View>
-        </GestureDetector>
+        <View style={{ borderWidth: 1, borderColor: "black" }}>
+          {rootNode && (
+            <View {...ResponderConfig}>
+              <NoteTree
+                componentRefs={componentRefs}
+                node={rootNode}
+                focusedNode={focusedNode}
+                handleRemoval={handleRemoval}
+              />
+            </View>
+          )}
+        </View>
       </GestureHandlerRootView>
       <Button
         title={"collapse"}
@@ -162,7 +165,15 @@ function NoteTree({
 
   //necessary due to spatial dependency between notes. Looking to eliminate this though - possible if we do something like guarantee the tree that has already been rendered.
 
-  useEffect(() => {componentRefs.current[node.id] = touchTargetBoundsRef; return ()=>{delete componentRefs.current[node.id]; handleRemoval(node.id)}}, [focusedNode]);
+  useEffect(() => {
+    console.log(`[NoteTree effect] registering ref for node id=${node.id}, ref.current=${touchTargetBoundsRef.current}`);
+    componentRefs.current[node.id] = touchTargetBoundsRef;
+    return () => {
+      console.log(`[NoteTree effect cleanup] removing ref for node id=${node.id}`);
+      delete componentRefs.current[node.id];
+      handleRemoval(node.id);
+    };
+  }, [focusedNode]);
 
 
   return (
