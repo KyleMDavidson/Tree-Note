@@ -1,7 +1,16 @@
 import { useMemo, useState } from "react";
-import { StyleSheet, Text, View } from "react-native";
+import { StyleSheet, Text } from "react-native";
 import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
-import { runOnJS, useAnimatedReaction, useDerivedValue, useSharedValue } from "react-native-reanimated";
+import Animated, {
+  DerivedValue,
+  runOnJS,
+  useAnimatedReaction,
+  useAnimatedStyle,
+  useDerivedValue,
+  useSharedValue,
+  withTiming,
+  SharedValue,
+} from "react-native-reanimated";
 
 import { ContentfulTestRoot } from "./fixtures";
 import { computeLayout } from "./layout";
@@ -10,9 +19,9 @@ import { LayoutNode, MarkedNode } from "./types";
 const NODE_W = 80;
 const NODE_H = 44;
 const HIT_RADIUS = 60;
+const TRANSITION_MS = 100;
 
 const Notes = () => {
-  const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
   const [layoutNodes, setLayoutNodes] = useState<LayoutNode[]>(
     () => computeLayout(ContentfulTestRoot as MarkedNode, ContentfulTestRoot.id)
   );
@@ -21,11 +30,15 @@ const Notes = () => {
   const focusedId = useSharedValue<number>(ContentfulTestRoot.id);
   const cx = useSharedValue(0);
   const cy = useSharedValue(0);
+  const progress = useSharedValue(1);
+  const prevLayout = useSharedValue<LayoutNode[]>(
+    computeLayout(ContentfulTestRoot as MarkedNode, ContentfulTestRoot.id)
+  );
 
-  // UI-thread layout — single source of truth for both hit detection and rendering
+  // UI-thread layout — single source of truth
   const uiLayoutNodes = useDerivedValue(() => computeLayout(rootNode, focusedId.value));
 
-  // Sync to JS only when focus changes, passing the already-computed nodes
+  // Sync to JS on focus change for React to know which nodes to render
   useAnimatedReaction(
     () => ({ id: focusedId.value, nodes: uiLayoutNodes.value }),
     (cur, prev) => {
@@ -45,7 +58,10 @@ const Notes = () => {
         (n) => Math.hypot(n.x - layoutX, n.y - layoutY) < HIT_RADIUS
       );
       if (hit && hit.id !== focusedId.value) {
+        prevLayout.value = uiLayoutNodes.value;
         focusedId.value = hit.id;
+        progress.value = 0;
+        progress.value = withTiming(1, { duration: TRANSITION_MS });
       }
     })
     .onUpdate((e) => {
@@ -56,18 +72,20 @@ const Notes = () => {
         (n) => Math.hypot(n.x - layoutX, n.y - layoutY) < HIT_RADIUS
       );
       if (hit && hit.id !== focusedId.value) {
+        prevLayout.value = uiLayoutNodes.value;
         focusedId.value = hit.id;
+        progress.value = 0;
+        progress.value = withTiming(1, { duration: TRANSITION_MS });
       }
     });
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
       <GestureDetector gesture={gesture}>
-        <View
+        <Animated.View
           style={{ flex: 1, overflow: "hidden" }}
           onLayout={(e) => {
             const { width, height } = e.nativeEvent.layout;
-            setContainerSize({ width, height });
             cx.value = width / 2;
             cy.value = height / 2;
           }}
@@ -76,11 +94,14 @@ const Notes = () => {
             <NodeView
               key={n.id}
               layoutNode={n}
-              cx={containerSize.width / 2}
-              cy={containerSize.height / 2}
+              currentLayout={uiLayoutNodes}
+              prevLayout={prevLayout}
+              progress={progress}
+              cx={cx}
+              cy={cy}
             />
           ))}
-        </View>
+        </Animated.View>
       </GestureDetector>
     </GestureHandlerRootView>
   );
@@ -88,32 +109,55 @@ const Notes = () => {
 
 function NodeView({
   layoutNode,
+  currentLayout,
+  prevLayout,
+  progress,
   cx,
   cy,
 }: {
   layoutNode: LayoutNode;
-  cx: number;
-  cy: number;
+  currentLayout: DerivedValue<LayoutNode[]>;
+  prevLayout: SharedValue<LayoutNode[]>;
+  progress: SharedValue<number>;
+  cx: SharedValue<number>;
+  cy: SharedValue<number>;
 }) {
-  const { x, y, scale, opacity, node, kind } = layoutNode;
+  const { node, kind } = layoutNode;
   const isFocused = kind === 'focused';
 
-  const borderColor =
-    isFocused ? "red" : kind === "child" || kind === "ancestor" ? "blue" : "grey";
+  const animatedStyle = useAnimatedStyle(() => {
+    const p = progress.value;
+    const cur = currentLayout.value.find((n) => n.id === layoutNode.id);
+    const prev = prevLayout.value.find((n) => n.id === layoutNode.id);
+
+    if (!cur) return { opacity: 0 };
+
+    const fromX = prev ? prev.x : cur.x;
+    const fromY = prev ? prev.y : cur.y;
+    const fromScale = prev ? prev.scale : cur.scale;
+    const fromOpacity = prev ? prev.opacity : cur.opacity;
+
+    const x = fromX + (cur.x - fromX) * p;
+    const y = fromY + (cur.y - fromY) * p;
+    const scale = fromScale + (cur.scale - fromScale) * p;
+    const opacity = fromOpacity + (cur.opacity - fromOpacity) * p;
+
+    const borderColor =
+      cur.kind === 'focused' ? 'red'
+      : cur.kind === 'child' || cur.kind === 'ancestor' ? 'blue'
+      : 'grey';
+
+    return {
+      left: cx.value + x - NODE_W / 2,
+      top: cy.value + y - NODE_H / 2,
+      borderColor,
+      opacity,
+      transform: [{ scale }],
+    };
+  });
 
   return (
-    <View
-      style={[
-        styles.node,
-        {
-          left: cx + x - NODE_W / 2,
-          top: cy + y - NODE_H / 2,
-          borderColor,
-          opacity,
-          transform: [{ scale }],
-        },
-      ]}
-    >
+    <Animated.View style={[styles.node, animatedStyle]}>
       <Text style={styles.nodeText} numberOfLines={2}>
         {node.title}
       </Text>
@@ -122,7 +166,7 @@ function NodeView({
           {node.content}
         </Text>
       ) : null}
-    </View>
+    </Animated.View>
   );
 }
 
