@@ -1,6 +1,9 @@
+import 'expo-dev-client';
 import { AppRegistry } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import Navigation from './app/navigation';
+import {Text} from 'react-native'
+
 
 function App() {
   return (
