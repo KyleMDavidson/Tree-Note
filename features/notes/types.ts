@@ -35,4 +35,14 @@ type HoverState = {
     hoveredNodeId: number | null;
 }
 
-export type { HoverState, Leaf, MarkedNode, Node, NodeTouchableBounds, TouchState };
+type LayoutNode = {
+  id: number;
+  x: number;
+  y: number;
+  scale: number;
+  opacity: number;
+  node: MarkedNode;
+  kind: 'focused' | 'child' | 'ancestor' | 'uncle';
+};
+
+export type { HoverState, LayoutNode, Leaf, MarkedNode, Node, NodeTouchableBounds, TouchState };
