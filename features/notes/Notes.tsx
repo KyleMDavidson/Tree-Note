@@ -21,6 +21,20 @@ const NODE_H = 44;
 const HIT_RADIUS = 60;
 const TRANSITION_MS = 100;
 
+function closestNode(nodes: LayoutNode[], layoutX: number, layoutY: number): LayoutNode | null {
+  'worklet';
+  let hit: LayoutNode | null = null;
+  let minDist = HIT_RADIUS;
+  for (let i = 0; i < nodes.length; i++) {
+    const dist = Math.hypot(nodes[i].x - layoutX, nodes[i].y - layoutY);
+    if (dist < minDist) {
+      minDist = dist;
+      hit = nodes[i];
+    }
+  }
+  return hit;
+}
+
 const Notes = () => {
   const [layoutNodes, setLayoutNodes] = useState<LayoutNode[]>(
     () => computeLayout(ContentfulTestRoot as MarkedNode, ContentfulTestRoot.id)
@@ -54,9 +68,7 @@ const Notes = () => {
       'worklet';
       const layoutX = e.x - cx.value;
       const layoutY = e.y - cy.value;
-      const hit = uiLayoutNodes.value.find(
-        (n) => Math.hypot(n.x - layoutX, n.y - layoutY) < HIT_RADIUS
-      );
+      const hit = closestNode(uiLayoutNodes.value, layoutX, layoutY);
       if (hit && hit.id !== focusedId.value) {
         prevLayout.value = uiLayoutNodes.value;
         focusedId.value = hit.id;
@@ -68,9 +80,7 @@ const Notes = () => {
       'worklet';
       const layoutX = e.x - cx.value;
       const layoutY = e.y - cy.value;
-      const hit = uiLayoutNodes.value.find(
-        (n) => Math.hypot(n.x - layoutX, n.y - layoutY) < HIT_RADIUS
-      );
+      const hit = closestNode(uiLayoutNodes.value, layoutX, layoutY);
       if (hit && hit.id !== focusedId.value) {
         prevLayout.value = uiLayoutNodes.value;
         focusedId.value = hit.id;
