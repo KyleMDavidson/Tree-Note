@@ -1,6 +1,6 @@
 import { useMemo, useState } from "react";
 import { StyleSheet, Text } from "react-native";
-import { Gesture, GestureDetector, GestureHandlerRootView } from "react-native-gesture-handler";
+import { Gesture, GestureDetector } from "react-native-gesture-handler";
 import Animated, {
   DerivedValue,
   runOnJS,
@@ -90,30 +90,28 @@ const Notes = () => {
     });
 
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
-      <GestureDetector gesture={gesture}>
-        <Animated.View
-          style={{ flex: 1, overflow: "hidden" }}
-          onLayout={(e) => {
-            const { width, height } = e.nativeEvent.layout;
-            cx.value = width / 2;
-            cy.value = height / 2;
-          }}
-        >
-          {layoutNodes.map((n) => (
-            <NodeView
-              key={n.id}
-              layoutNode={n}
-              currentLayout={uiLayoutNodes}
-              prevLayout={prevLayout}
-              progress={progress}
-              cx={cx}
-              cy={cy}
-            />
-          ))}
-        </Animated.View>
-      </GestureDetector>
-    </GestureHandlerRootView>
+    <GestureDetector gesture={gesture}>
+      <Animated.View
+        style={{ flex: 1, overflow: "hidden" }}
+        onLayout={(e) => {
+          const { width, height } = e.nativeEvent.layout;
+          cx.value = width / 2;
+          cy.value = height / 2;
+        }}
+      >
+        {layoutNodes.map((n) => (
+          <NodeView
+            key={n.id}
+            layoutNode={n}
+            currentLayout={uiLayoutNodes}
+            prevLayout={prevLayout}
+            progress={progress}
+            cx={cx}
+            cy={cy}
+          />
+        ))}
+      </Animated.View>
+    </GestureDetector>
   );
 };
 
@@ -195,7 +193,7 @@ const styles = StyleSheet.create({
   nodeText: {
     fontSize: 11,
     textAlign: "center",
-    color: "#222",
+    color: "#222222ff",
   },
   contentText: {
     fontSize: 9,
