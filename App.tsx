@@ -1,14 +1,13 @@
 import 'expo-dev-client';
 import { AppRegistry } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import Navigation from './app/navigation';
-import {Text} from 'react-native'
+import Notes from './features/notes/Notes';
 
 
 function App() {
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-      <Navigation />
+      <Notes />
     </GestureHandlerRootView>
   );
 }
