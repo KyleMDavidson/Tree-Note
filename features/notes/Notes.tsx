@@ -92,7 +92,7 @@ const Notes = () => {
   return (
     <GestureDetector gesture={gesture}>
       <Animated.View
-        style={{ flex: 1, overflow: "hidden" }}
+        style={{ flex: 1, overflow: "hidden", backgroundColor: "white" }}
         onLayout={(e) => {
           const { width, height } = e.nativeEvent.layout;
           cx.value = width / 2;
@@ -150,15 +150,13 @@ function NodeView({
     const scale = fromScale + (cur.scale - fromScale) * p;
     const opacity = fromOpacity + (cur.opacity - fromOpacity) * p;
 
-    const borderColor =
-      cur.kind === 'focused' ? 'red'
-      : cur.kind === 'child' || cur.kind === 'ancestor' ? 'blue'
-      : 'grey';
+    const focused = cur.kind === 'focused';
 
     return {
       left: cx.value + x - NODE_W / 2,
       top: cy.value + y - NODE_H / 2,
-      borderColor,
+      borderColor: focused ? '#2563eb' : '#d1d5db',
+      borderWidth: focused ? 2.5 : 1,
       opacity,
       transform: [{ scale }],
     };
@@ -183,7 +181,7 @@ const styles = StyleSheet.create({
     position: "absolute",
     width: NODE_W,
     height: NODE_H,
-    borderWidth: 2,
+    borderWidth: 1,
     borderRadius: 6,
     backgroundColor: "white",
     alignItems: "center",
