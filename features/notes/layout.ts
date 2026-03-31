@@ -6,6 +6,7 @@ const MIN_UNCLE_RADIUS = 100;
 const NODE_W = 80;
 
 function findPath(root: MarkedNode, targetId: number): MarkedNode[] | null {
+  'worklet';
   if (root.id === targetId) return [root];
   for (const child of root.children) {
     const path = findPath(child, targetId);
@@ -15,6 +16,7 @@ function findPath(root: MarkedNode, targetId: number): MarkedNode[] | null {
 }
 
 export function computeLayout(root: MarkedNode, focusedId: number): LayoutNode[] {
+  'worklet';
   const path = findPath(root, focusedId);
   if (!path) return [];
 
